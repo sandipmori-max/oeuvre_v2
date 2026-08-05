@@ -728,6 +728,7 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
   };
 
   const safeParse = (data) => {
+    console.log("datadatadata", data)
     if (!data) return [];
     if (typeof data === "object") return data; // already parsed ✅
     if (typeof data === "string") {
@@ -752,12 +753,15 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
       isFromChild: boolean;
     }) => {
       const setValue = (val, source) => {
+
+       console.log("valvalvalvalvalvalvalvalvalvalval", val, source)
         if (myScript && source && source === "isFromDropdown") {
           const raw = myScript.find((obj) =>
             obj.rules?.some(
               (rule) => rule.triggerFields === item?.field
             )
           );
+          console.log("rawrawraw", raw)
           if (!raw) {
             setFormValues((prev) => ({
               ...prev,
@@ -769,6 +773,45 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
             (rule) =>
               rule.formulaType === "dayCalculationForLeave"
           );
+
+          const isComponentHideVisible = raw.rules?.some(
+            (rule) =>
+              rule.formulaType === "componentHideVisible"
+          );
+
+          console.log("isComponentHideVisibleisComponentHideVisibleisComponentHideVisible", isComponentHideVisible)
+          
+          if (isComponentHideVisible) {
+  const updatedValues = {
+    ...formValues,
+    [item.field]: val,
+  };
+
+  console.log("updatedValuesupdatedValuesupdatedValues", updatedValues)
+
+  setFormValues(updatedValues);
+
+  const result = runDynamicRules(
+    myScript,
+    updatedValues,
+    item.field
+  );
+
+  console.log("resultresultresult", result)
+
+  if (result.actions?.length) {
+    const updatedControls = applyActionsToControls(
+      controls,
+      result.actions
+    );
+
+    console.log("updatedControls", updatedControls)
+
+    setControls(updatedControls);
+  }
+
+  return;
+}
           if (!isDayCalculation) {
             setFormValues((prev) => ({
               ...prev,
@@ -847,16 +890,21 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
 
           return;
         } else {
+          console.log("valvalvalvalvalvalvalvalvalvalval else ", val)
           setFormValues((prev) => {
             let updatedValues;
+             console.log("myScriptmyScriptmyScriptmyScript", myScript)
             if (typeof val === "object" && val !== null) {
               updatedValues = { ...prev, ...val };
             } else {
               updatedValues = { ...prev, [item.field]: val };
             }
+             console.log("myScriptmyScriptmyScriptmyScript2222", myScript)
             const parsed = safeParse(myScript);
+            console.log("parsed", parsed)
             const safeRules = Array.isArray(parsed) ? parsed : [parsed];
             const result = runDynamicRules(safeRules, updatedValues, item.field);
+            console.log("result", result)
             let finalValues = { ...result.values };
             result.actions.forEach((action) => {
               if (action?.action === "setValue" && action?.field) {
@@ -882,6 +930,7 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
         }
 
       };
+             
 
       const value =
         formValues[item?.field] === "#location"

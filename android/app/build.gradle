@@ -21,8 +21,8 @@ android {
         applicationId "com.deverp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 42
-        versionName "1.4.2"
+        versionCode 46
+        versionName "1.4.6"
     }
     signingConfigs {
         debug {

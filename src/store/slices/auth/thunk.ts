@@ -40,24 +40,24 @@ export const checkAuthStateThunk = createAsyncThunk(
       console.error(" 👈 👈 👈 getAuth getAuth getAuth: 👈👈👈👈 ---- -- - -- - - - - -"); // 👈 added log
       // 🔄 Token expired → try refresh
       try {
-        const res =  await DevERPService.getAuth();
-         console.error(" 👈 👈 👈 res res res: 👈👈👈👈 ---- -- - -- - - - - -", res); 
-         if(res === 'token_expired'){
-            return rejectWithValue("token_expired");
-         }
+        const res = await DevERPService.getAuth();
+        console.error(" 👈 👈 👈 res res res: 👈👈👈👈 ---- -- - -- - - - - -", res);
+        if (res === 'token_expired') {
+          return rejectWithValue("token_expired");
+        }
       } catch (err: any) {
         // 👇 THIS is where you detect expiry / failure
         return rejectWithValue("token_expired");
       }
 
       const updatedAccounts = await getAccounts(db);
-        const updatedActiveAccount = await getActiveAccount(db);
-        DevERPService.setToken(updatedActiveAccount?.user?.token || "");
-        return {
-          accounts: updatedAccounts,
-          activeAccountId: updatedActiveAccount?.id || null,
-          user: updatedActiveAccount?.user || null,
-        };
+      const updatedActiveAccount = await getActiveAccount(db);
+      DevERPService.setToken(updatedActiveAccount?.user?.token || "");
+      return {
+        accounts: updatedAccounts,
+        activeAccountId: updatedActiveAccount?.id || null,
+        user: updatedActiveAccount?.user || null,
+      };
 
     } catch (error) {
       return rejectWithValue("Failed to check authentication state");
@@ -325,7 +325,12 @@ export const getERPMenuThunk = createAsyncThunk(
 
       return rejectWithValue("Invalid menu response format");
     } catch (error: any) {
-      return rejectWithValue(error?.message || "Failed to get ERP menu");
+      if (error?.message === 'Invalid Token') {
+        return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
+      } else {
+        return rejectWithValue(error?.message || "Failed to get ERP menu");
+      }
+
     }
   },
 );
@@ -345,7 +350,12 @@ export const getERPAppConfigMenuThunk = createAsyncThunk(
       return rejectWithValue('Invalid menu response format');
     } catch (error: any) {
       console.log("response---error---------------=======================", error)
-      return rejectWithValue(error?.message || 'Failed to get ERP menu');
+      if (error?.message === 'Invalid Token') {
+        return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
+      } else {
+        return rejectWithValue(error?.message || "Failed to get ERP menu");
+      }
+      // return rejectWithValue(error?.message || 'Failed to get ERP menu');
     }
   },
 );
@@ -369,7 +379,12 @@ export const getERPDashboardThunk = createAsyncThunk(
       return dashboard;
     } catch (error: any) {
       console.log("dashboard-----------error----------", error);
-      return rejectWithValue(error?.message || "Failed to get ERP dashboard");
+      if (error?.message === 'Invalid Token') {
+        return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
+      } else {
+        return rejectWithValue(error?.message || "Failed to get ERP Dashboard");
+      }
+      // return rejectWithValue(error?.message || "Failed to get ERP dashboard");
     }
   },
 );
@@ -383,7 +398,12 @@ export const getERPPageThunk = createAsyncThunk<
     const pageData = await DevERPService.getPage(page, id);
     return pageData;
   } catch (error: any) {
-    return rejectWithValue(error || "Failed to get ERP page data");
+    if (error?.message === 'Invalid Token') {
+      return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
+    } else {
+      return rejectWithValue(error?.message || "Failed to get ERP page data");
+    }
+    // return rejectWithValue(error || "Failed to get ERP page data");
   }
 });
 
@@ -410,7 +430,12 @@ export const getERPListDataThunk = createAsyncThunk(
       );
       return listData;
     } catch (error: any) {
-      return rejectWithValue(error?.message || "Failed to get ERP list data");
+      if (error?.message === 'Invalid Token') {
+        return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
+      } else {
+        return rejectWithValue(error?.message || "Failed to get ERP List data");
+      }
+      // return rejectWithValue(error?.message || "Failed to get ERP list data");
     }
   },
 );
@@ -432,8 +457,12 @@ export const getERPConfigDataThunk = createAsyncThunk(
       return listData;
     } catch (error: any) {
       console.log("error =================", error)
-
-      return rejectWithValue(error?.message || "Failed to get ERP list data");
+      if (error?.message === 'Invalid Token') {
+        return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
+      } else {
+        return rejectWithValue(error?.message || "Failed to get ERP list data");
+      }
+      // return rejectWithValue(error?.message || "Failed to get ERP list data");
     }
   },
 );

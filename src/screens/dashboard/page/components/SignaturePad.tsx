@@ -29,6 +29,10 @@ const SignaturePad: React.FC = ({
 }: any) => {
   const signatureRef = useRef<SignatureViewRef>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [showPad, setShowPad] = useState(false);
+
+  const [signatureKey, setSignatureKey] = useState(0);
+
   const [savedSignature, setSavedSignature] = useState<string | null>(null);
   const baseLink = useBaseLink();
   const [cacheBuster, setCacheBuster] = useState(Date.now());
@@ -41,6 +45,8 @@ const SignaturePad: React.FC = ({
     handleSignatureAttachment(`${item?.field}.jpeg; ${signature}`, item?.field);
     setCacheBuster(Date.now());
     setModalVisible(false);
+
+    closePad();
   };
 
   const handleClear = () => {
@@ -56,6 +62,22 @@ const SignaturePad: React.FC = ({
     if (savedSignature) return savedSignature;
     const base = `${baseLink}fileupload/1/${infoData?.tableName}/${infoData?.id}/${item?.text}`;
     return `${base}?cb=${cacheBuster}`;
+  };
+
+const openPad = () => {
+  setShowPad(false);
+
+  setTimeout(() => {
+    setSignatureKey(prev => prev + 1); // <-- important
+    setShowPad(true);
+    setModalVisible(true);
+  }, 50);
+};
+
+  const closePad = () => {
+    signatureRef.current?.clearSignature();
+    setShowPad(false);
+    setModalVisible(false);
   };
 
   return (
@@ -86,11 +108,11 @@ const SignaturePad: React.FC = ({
           borderStyle: "dashed",
           borderRadius: 8,
           borderColor: ERP_COLOR_CODE.ERP_APP_COLOR,
-          backgroundColor: theme === "dark" ? "#000" : "#f8f9ff",
+          backgroundColor: "#f8f9ff",
         }}
       >
         <View></View>
-        <View style={{ height: 100, width: 100,  backgroundColor: theme === "dark" ? "#000" : "#f8f9ff", }}>
+        <View style={{ height: 100, width: 100, backgroundColor: "#f8f9ff", }}>
           <Image
             source={{ uri: getImageUri() }}
             style={styles.imageThumb}
@@ -105,7 +127,9 @@ const SignaturePad: React.FC = ({
           backgroundColor: ERP_COLOR_CODE.ERP_APP_COLOR,
           justifyContent: "center",
           alignItems: "center",
-        }} onPress={() => setModalVisible(true)}>
+        }} onPress={() => {
+          openPad()
+        }}>
           <MaterialIcons name="edit" size={14} color="#fff" />
         </TouchableOpacity>
       </View>
@@ -115,9 +139,13 @@ const SignaturePad: React.FC = ({
         transparent
         supportedOrientations={["portrait", "landscape"]}
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={() => {
+          closePad()
+        }}
       >
-        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+        <TouchableWithoutFeedback onPress={() => {
+          closePad()
+        }}>
           <View style={styles.overlay} />
         </TouchableWithoutFeedback>
         <View style={styles.container2}>
@@ -168,7 +196,7 @@ const SignaturePad: React.FC = ({
 
                 <TouchableOpacity
                   style={[styles.button, styles.closeButton]}
-                  onPress={() => setModalVisible(false)}
+                  onPress={() => {closePad()}}
                 >
                   <MaterialIcons
                     name="close"
@@ -178,30 +206,61 @@ const SignaturePad: React.FC = ({
                 </TouchableOpacity>
               </View>
             </View>
+            {
+              showPad ? <View
+                style={[
+                  styles.signatureBox,
+                  {
+                    backgroundColor: "white",
+                  },
+                ]}
+              >
+                <SignatureScreen
+                  ref={signatureRef}
+                  key={signatureKey}
+                  onOK={handleSignature}
+                  onEmpty={() => Alert.alert(t("msg.msg14"))}
+                  descriptionText={t("text.text40")}
+                  clearText={t("text.text41")}
+                  confirmText={t("text.text42")}
+                  backgroundColor="#FFFFFF"
+                  penColor="#000000"
+                  dataURL={savedSignature || undefined}
+                  webviewProps={{
+                      cacheEnabled: false,
+                      cacheMode: "LOAD_NO_CACHE",
+                      androidLayerType: "software",
+                  }}
+                  webStyle={`
+                    body,html {
+                      background: #fff;
+                    }
 
-            <View
-              style={[
-                styles.signatureBox,
-                {
-                  backgroundColor: "white",
-                },
-              ]}
-            >
-              <SignatureScreen
-                ref={signatureRef}
-                onOK={handleSignature}
-                onEmpty={() => Alert.alert(t("msg.msg14"))}
-                descriptionText={t("text.text40")}
-                clearText={t("text.text41")}
-                confirmText={t("text.text42")}
-                autoClear={false}
-                dataURL={savedSignature || undefined}
-                webStyle={`
-                .m-signature-pad--footer {display: none; margin: 0;}
-                .m-signature-pad {box-shadow: none; border: none;}
-              `}
-              />
-            </View>
+                    .m-signature-pad {
+                      box-shadow: none;
+                      border: none;
+                      background-color: #fff;
+                    }
+
+                    .m-signature-pad--body {
+                      border: none;
+                      background-color: #fff;
+                    }
+
+                    canvas {
+                      background-color: #fff !important;
+                    }
+
+                    .m-signature-pad--footer {
+                      display: none;
+                    }
+                  `}
+                />
+              </View> : <>
+                <Text>Loading....</Text>
+              </>
+            }
+
           </View>
         </View>
 
@@ -215,7 +274,7 @@ export default SignaturePad;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 0, 
+    marginTop: 0,
   },
   container2: {
     position: 'absolute',
@@ -274,7 +333,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 0.4,
     borderColor: ERP_COLOR_CODE.ERP_APP_COLOR,
-    backgroundColor: ERP_COLOR_CODE.ERP_WHITE,
+    backgroundColor: "#fff",
   },
   buttonOverlay: {
     flexDirection: "row",

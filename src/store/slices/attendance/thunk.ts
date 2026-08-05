@@ -17,7 +17,12 @@ export const markAttendanceThunk = createAsyncThunk<
       );
       return response;
     } catch (error: any) {
-      return rejectWithValue(error?.message || "Failed to mark attendance");
+      if(error?.message === 'Invalid Token'){
+        return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
+      }else{
+        return rejectWithValue(error?.message || "Failed to mark attendacne");
+      }
+      // return rejectWithValue(error?.message || "Failed to mark attendance");
     }
   },
 );
@@ -31,7 +36,12 @@ export const getLastPunchInThunk = createAsyncThunk<
     const response = await DevERPService.getLastPunchIn();
     return response;
   } catch (error: any) {
-    return rejectWithValue(error?.message || "Failed to fetch last punch-in");
+     if(error?.message === 'Invalid Token'){
+        return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
+      }else{
+        return rejectWithValue(error?.message || "Failed to fetch last punch-in");
+      }
+    // return rejectWithValue(error?.message || "Failed to fetch last punch-in");
   }
 });
 
@@ -46,7 +56,12 @@ export const getLastPunchInList = createAsyncThunk<
       const response = await DevERPService.getLastPunchList(id, fd, td);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error?.message || "Failed to fetch last punch-in");
+       if(error?.message === 'Invalid Token'){
+        return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
+      }else{
+        return rejectWithValue(error?.message || "Failed to fetch last punh-in");
+      }
+      // return rejectWithValue(error?.message || "Failed to fetch last punch-in");
     }
   },
 );

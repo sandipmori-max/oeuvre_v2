@@ -384,30 +384,47 @@ const RootNavigator = () => {
     }
   };
 
-  // ------------------------- Focus -------------------------
+ // ------------------------- Focus -------------------------
   useEffect(() => {
-    if (isAuthenticated) {
-      setERPAppColor(appColorCode)
-      // Optional: cancel timeout if component unmounts
-      const timer = setTimeout(() => {
-        if (attendanceDone) {
+    if (!isAuthenticated) return;
+
+    setERPAppColor(appColorCode);
+
+    const checkPunchStatus = async () => {
+      try {
+        const res = await dispatch(getLastPunchInThunk()).unwrap();
+        if (res?.success === 1 || res?.success === "1") {
           dispatch(updateAttendanceState(true));
-          checkLocation();
+          await checkLocation();
         } else {
+
           dispatch(updateAttendanceState(false));
           setAlertVisible(false);
           setOpenSettings(false);
           setBackgroundDeniedModal(false);
-          NativeModules.LocationModule.setUserTokens([]);
+          // clear tokens and stop service only when user is actually punched out
+          NativeModules.LocationModule.clearUserTokens?.();
           NativeModules.LocationModule.stopService();
         }
 
-      }, 2500);
-      // Cleanup to avoid memory leaks
-      return () => clearTimeout(timer);
-    }
-  }, [isAuthenticated, reLoading, attendanceDone]);
+      } catch (error) {
+        NativeModules.LocationModule.clearUserTokens?.();
+        NativeModules.LocationModule.stopService();
+        // ❌ IMPORTANT:
+        // network error par service stop mat karo
+        console.log("Punch status error", error);
+      }
+    };
 
+    // run immediately
+    checkPunchStatus();
+
+    // then repeat every 30 sec (3 sec bahut aggressive hai)
+    const interval = setInterval(checkPunchStatus, 30000);
+
+    return () => clearInterval(interval);
+
+  }, [isAuthenticated, appColorCode, attendanceDone, reLoading]);
   // ------------------------- Render -------------------------
   if (isLoading || forceLoader) return <FullViewLoader />;
 

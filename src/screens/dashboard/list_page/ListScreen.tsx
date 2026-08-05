@@ -9,6 +9,10 @@ import {
   Animated,
   ActivityIndicator,
   useWindowDimensions,
+  PanResponder,
+  Dimensions,
+  Image,
+  ScrollView,
 } from "react-native";
 import React, {
   useEffect,
@@ -59,6 +63,7 @@ import TableView from "./components/TableView";
 import GroupFilterModal from "./components/GroupFilterModal";
 import SortingFilterModal from "./components/SortingFilterModal";
 import DeviceInfo from "react-native-device-info";
+ import { useBaseLink } from "../../../hooks/useBaseLink";
 
 const ListScreen = () => {
   const route = useRoute<RouteProp<ListRouteParams, "List">>();
@@ -66,6 +71,7 @@ const ListScreen = () => {
   console.log("parsedConfig", parsedConfig);
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
+
   const {
     loading: actionLoader,
     error: actionError,
@@ -74,6 +80,7 @@ const ListScreen = () => {
   const isIpad =
     (Platform.OS === "ios" && Platform.isPad) || DeviceInfo.isTablet() || Platform.isTV;
   const { t } = useTranslations();
+  const [selectedStatus, setSelectedStatus] = useState("All");
   const [loadingListId, setLoadingListId] = useState<string | null>(null);
   const [listData, setListData] = useState<any[]>([]);
   const [configData, setConfigData] = useState<any[]>([]);
@@ -113,6 +120,80 @@ const ListScreen = () => {
   const [sortingKey, setSortingKey] =
     useState("");
 
+
+  const [bottomSheetType, setBottomSheetType] = useState('');
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const sheetProgress = useRef(
+    new Animated.Value(0),
+  ).current;
+  const [showLoginSheet, setShowLoginSheet] = useState(false);
+  const [confirmation, setConfirmation] = useState<any>()
+  const [selected, setSelected] = useState<"yes" | "no" | null>(null);
+
+  const sheetTranslateY =
+    sheetProgress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [400, 0],
+    });
+
+  const openSheet = () => {
+    setSelectedLoginType("")
+    setShowLoginSheet(true);
+    sheetProgress.setValue(0);
+
+    Animated.timing(sheetProgress, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeSheet = () => {
+    setShowLoginSheet(false);
+    setConfirmation(false)
+    setSelected(null)
+    setTapLoader(false)
+
+  };
+
+  const loginOptions = [
+    'Mobile Number',
+    'Aadhaar Number',
+    'ABHA Number',
+    'ABHA Address'
+  ];
+
+  const registerOptions = [
+    'Aadhaar Number',
+    // 'Driving Licence',
+  ];
+  const sheetAnim = useRef(new Animated.Value(400)).current;
+  const baseLink = useBaseLink();
+  const optionList = bottomSheetType === 'Login' ? loginOptions : registerOptions;
+  const [selectedLoginType, setSelectedLoginType] = useState();
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gesture) =>
+        gesture.dy > 5,
+
+      onPanResponderMove: (_, gesture) => {
+        if (gesture.dy > 0) {
+          sheetAnim.setValue(gesture.dy);
+        }
+      },
+
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dy > 120) {
+          closeSheet();
+        } else {
+          Animated.spring(sheetAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    }),
+  ).current;
 
 
   const availableKeys = Object.keys(
@@ -271,7 +352,7 @@ const ListScreen = () => {
               isLoading={actionLoaders}
             />
           )}
-          {/* {
+          {
              <ERPIcon
               name={isTableView ? 'list' : 'apps'}
               onPress={() => {
@@ -279,7 +360,7 @@ const ListScreen = () => {
                 setIsTableView(!isTableView);
               }}
             />
-          }  */}
+          } 
           {
             isTableView && <ERPIcon
               name={'G1'}
@@ -422,6 +503,57 @@ const ListScreen = () => {
     }
   };
 
+const statusOptions = useMemo(() => {
+  const uniqueStatus = [
+    ...new Set(
+      listData
+        .map(item => item?.status?.toString().trim())
+        .filter(status => !!status)
+    ),
+  ];
+
+  return uniqueStatus.length > 0
+    ? ["All", ...uniqueStatus]
+    : [];
+}, [listData]);
+
+  console.log("statusOptionsstatusOptionsstatusOptions", statusOptions)
+
+  const handleStatusChange = (status) => {
+    setSelectedStatus(status);
+    applyFilters(searchQuery, status);
+  };
+
+
+
+  const applyFilters = (
+    search = searchQuery,
+    status = selectedStatus,
+  ) => {
+    let data = [...listData];
+
+    // Status Filter
+    if (status !== "All") {
+      data = data.filter(
+        item => item?.status === status,
+      );
+    }
+
+    // Search Filter
+    if (search.trim()) {
+      const q = search.toLowerCase();
+
+      data = data.filter(item =>
+        Object.values(item)
+          .join(" ")
+          .toLowerCase()
+          .includes(q),
+      );
+    }
+
+    setFilteredData(data);
+  };
+
   useEffect(() => {
     if (parsedConfig?.branchwise === 1 || parsedConfig?.branchwise === "1") {
       fetchPageData();
@@ -511,8 +643,9 @@ const ListScreen = () => {
   };
 
   const handleSearchChange = (text: string) => {
+    setSelectedStatus('All')
     setSearchQuery(text);
-    debouncedSearch(text, listData);
+    debouncedSearch(text, listData); 
   };
 
   const clearSearch = () => {
@@ -767,7 +900,21 @@ const ListScreen = () => {
     onRefresh();
   };
 
+  const handleAbhaClicked = (item) => {
+    navigation.navigate('Details', {
+      item
+    })
+  }
 
+  const handleContinue = () => {
+    if (!selected) return;
+    if (selected === "yes") {
+      setBottomSheetType('Login')
+    } else {
+      setBottomSheetType('Register')
+    }
+    setConfirmation(true)
+  };
 
   if (parsedError) {
     return (
@@ -883,7 +1030,7 @@ const ListScreen = () => {
                         )}
                       </View>
                     </View>
-                    { 
+                    {
                       <View style={{
                         borderRadius: 2,
                         justifyContent: 'center',
@@ -917,10 +1064,10 @@ const ListScreen = () => {
 
                 <View style={{ flexDirection: "row", width: "70%", marginLeft: 8 }}>
                   <View style={{
-                    width: '54%', 
+                    width: '54%',
                   }}>
                     {(parsedConfig?.period === 1 || parsedConfig?.period === "1") && (
-                      <View style={[styles.dateContainer,{
+                      <View style={[styles.dateContainer, {
                         marginVertical: 0
                       }]}>
                         {/* Start Date */}
@@ -988,7 +1135,7 @@ const ListScreen = () => {
 
                   <View style={{
                     marginLeft: 8,
-                    width: '28%', 
+                    width: '28%',
                   }}>
                     {(parsedConfig?.branchwise === 1 ||
                       parsedConfig?.branchwise === "1") &&
@@ -1117,7 +1264,7 @@ const ListScreen = () => {
 
                 </View>
                 {
-                    <View style={{
+                  <View style={{
                     borderRadius: 2,
                     justifyContent: 'center',
                     alignContent: 'center',
@@ -1142,7 +1289,7 @@ const ListScreen = () => {
                 }
 
               </View>
-              <View style={{ marginVertical: 1}} />
+              <View style={{ marginVertical: 1 }} />
               {(parsedConfig?.period === 1 || parsedConfig?.period === "1") && (
                 <View style={[styles.dateContainer,]}>
                   {/* Start Date */}
@@ -1280,7 +1427,7 @@ const ListScreen = () => {
                       backgroundColor: 'black'
                     },
                     {
-                      width: isIpad ? isLandscape  ? "40%" : "48%" : "100%",
+                      width: isIpad ? isLandscape ? "40%" : "48%" : "100%",
                     },
                   ]}
                 >
@@ -1354,7 +1501,7 @@ const ListScreen = () => {
                     style={[
                       styles.picker,
                       {
-                        backgroundColor: theme === "dark" ? "black" :  "white",
+                        backgroundColor: theme === "dark" ? "black" : "white",
                       },
                     ]}
                     themeVariant={theme === "dark" ? "dark" : "light"}
@@ -1399,6 +1546,40 @@ const ListScreen = () => {
           ) : (
             <>
               {/* <AppMapView /> */}
+              <View style={{ marginVertical: 8 , marginHorizontal: 12}}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                >
+                  {statusOptions.map(status => (
+                    <TouchableOpacity
+                      key={status}
+                      onPress={() => handleStatusChange(status)}
+                      style={{
+                        paddingHorizontal: 16, 
+                        paddingVertical: 8,
+                        marginRight: 8,
+                        borderRadius: 12,
+                        backgroundColor:
+                          selectedStatus === status
+                            ? ERP_COLOR_CODE.ERP_APP_COLOR
+                            : "#E5E7EB",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color:
+                            selectedStatus === status
+                              ? "#fff"
+                              : "#000",
+                        }}
+                      >
+                        {status}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
               {
                 isTableView ? <>
                   <TableView
@@ -1440,6 +1621,7 @@ const ListScreen = () => {
                   handleActionButtonPressed={handleActionButtonPressed}
                   isLoadingMore={isLoadingMore}
                   loadMore={loadMore}
+                  handleAbhaClicked={handleAbhaClicked}
                 />
               }
 
@@ -1482,7 +1664,11 @@ const ListScreen = () => {
               onPressOut={onPressOut}
               onPress={() => {
                 setTapLoader(true);
-                handleItemPressed({}, pageParamsName, pageTitle);
+                if (parsedConfig?.title.includes('ABHA')) {
+                  openSheet();
+                } else {
+                  handleItemPressed({}, pageParamsName, pageTitle);
+                }
               }}
             >
               {tapLoader ? (
@@ -1493,135 +1679,390 @@ const ListScreen = () => {
             </TouchableOpacity>
           </Animated.View>
         )}
-      {
-        alertVisible &&    <CustomAlert
-        visible={alertVisible}
-        title={alertConfig.title}
-        message={alertConfig.message}
-        type={alertConfig.type}
-        onClose={() => setAlertVisible(false)}
-        onCancel={() => setAlertVisible(false)}
-        actionLoader={actionLoader}
-        isBottomButtonVisible={true}
-        doneText={alertConfig.title}
-        color={alertConfig.color}
-        onDone={async (remark) => {
-          try {
-            const type = `page${alertConfig.title}`;
-            await dispatch(
-              handlePageActionThunk({
-                action: type,
-                id: alertConfig.id.toString(),
-                remarks: remark,
-                page: alertConfig?.actionValue,
-              }),
-            ).unwrap();
 
-            setAlertVisible(false);
-            onRefresh();
-          } catch (err) {
-            setAlertVisible(false);
-            setAlertConfig({
-              title: "Api error",
-              message: err?.toString() || "",
-              type: "info",
-              actionValue: "",
-              color: "",
-              id: 0,
-            });
-            setApiError(true);
-          }
-        }}
-        isFromButtonList={true}
-        closeHide={undefined}
-      />
-      }
-   
+      {showLoginSheet && (
+        <Modal
+          transparent
+          visible={showLoginSheet}
+          animationType="none"
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.backdrop}
+            onPress={closeSheet}
+          />
+
+          <Animated.View
+            {...panResponder.panHandlers}
+            style={[
+              styles.bottomSheet,
+              {
+                transform: [
+                  {
+                    translateY: sheetTranslateY,
+                  },
+                ],
+              },
+              confirmation && bottomSheetType !== 'Login' && {
+                height: '46%'
+              },
+              confirmation && bottomSheetType === 'Login' && {
+                height: '64%'
+              }
+            ]}
+          >
+
+            <View style={styles.logo}>
+              <Image
+                source={{
+                  uri: `${baseLink}fileupload/1/InvoiceByConfig/1/logo.jpg`,
+                }}
+                style={{
+                  top: 5,
+                  height: 60, width: 80, alignSelf: 'center'
+                }}
+                resizeMode="contain"
+              />
+            </View>
+
+            {
+              confirmation ? <>
+                <View style={{ height: 14 }} />
+                <Text style={styles.sheetTitle}>
+                  {bottomSheetType === 'Login' ? 'Login To Your ABHA' : 'Create ABHA number using'}
+                </Text>
+
+                <Text style={{
+                  color: 'gray',
+                  marginBottom: 12
+                }}>
+                  {
+                    bottomSheetType === 'Login' ? 'Select a login method to access your ABHA account.' : 'Please choose one of the below option to start with the creation of your ABHA'
+                  }
+                </Text>
+
+                {optionList.map(item => {
+                  const selected =
+                    selectedLoginType === item;
+
+                  return (
+                    <TouchableOpacity
+                      key={item}
+                      style={[
+                        styles.optionRow,
+                        selected &&
+                        {
+                          borderColor: ERP_COLOR_CODE.ERP_APP_COLOR,
+                          backgroundColor: "#f6f1ed",
+                        },
+                      ]}
+                      onPress={() => {
+                        setSelectedLoginType(item)
+
+                      }}
+                    >
+                      <View
+                        style={[
+                          styles.radioOuter,
+                          selected &&
+                          {
+                            borderColor: ERP_COLOR_CODE.ERP_APP_COLOR
+                          },
+                        ]}
+                      >
+                        {selected && (
+                          <View
+                            style={styles.radioInner}
+                          />
+                        )}
+                      </View>
+
+                      <Text
+                        style={styles.optionText}
+                      >
+                        {item}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+
+                <TouchableOpacity
+                  disabled={!selectedLoginType}
+                  style={[
+                    styles.button,
+                    {
+                      backgroundColor: ERP_COLOR_CODE.ERP_APP_COLOR
+                    },
+                    !selectedLoginType && styles.disabledButton,
+                  ]}
+                  onPress={() => {
+                    if (selectedLoginType === 'Driving Licence') {
+                      setShowLoginSheet(false)
+                      setShowInfoModal(true)
+                      return;
+                    }
+                    setTimeout(() => {
+                      setShowLoginSheet(false)
+                      navigation.navigate("RegistrationAbha", {
+                        loginType: selectedLoginType,
+                        isFromRegister: bottomSheetType === 'Login' ? false : true
+                      })
+                    })
+                    setShowLoginSheet(false);
+                    setConfirmation(false)
+                    setSelected(null)
+                  }}
+                >
+                  <Text style={styles.buttonText}>
+                    Continue
+                  </Text>
+                </TouchableOpacity>
+              </> : <>
+                <Text style={styles.title}>
+                  Do you already have ABHA?
+                </Text>
+
+                <Text style={styles.subtitle}>
+                  Select one option to continue patient registration
+                </Text>
+
+
+                <View style={styles.flowContainer}>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.option,
+                      selected === "yes" && {
+                        borderColor: ERP_COLOR_CODE.ERP_APP_COLOR,
+                        backgroundColor: "#f6f1ed",
+                      },
+                    ]}
+                    onPress={() => setSelected("yes")}
+                  >
+
+                    <View
+                      style={[
+                        styles.radioOuter,
+                        selected === "yes" &&
+                        {
+                          borderColor: ERP_COLOR_CODE.ERP_APP_COLOR
+                        },
+                      ]}
+                    >
+                      {selected === "yes" && (
+                        <View
+                          style={styles.radioInner}
+                        />
+                      )}
+                    </View>
+
+                    <View style={{ marginLeft: 12 }}>
+                      <Text style={styles.optionTitle}>
+                        Yes, I have ABHA
+                      </Text>
+
+                      <Text style={styles.optionDesc}>
+                        Verify existing ABHA and fetch profile
+                      </Text>
+                    </View>
+
+                  </TouchableOpacity>
+
+
+                  {/* Connector */}
+                  <View style={styles.connector} />
+
+
+                  <TouchableOpacity
+                    style={[
+                      styles.option,
+                      selected === "no" && {
+                        borderColor: ERP_COLOR_CODE.ERP_APP_COLOR,
+                        backgroundColor: "#f6f1ed",
+                      }, ,
+                    ]}
+                    onPress={() => setSelected("no")}
+                  >
+                    <View
+                      style={[
+                        styles.radioOuter,
+                        selected === "no" &&
+                        {
+                          borderColor: ERP_COLOR_CODE.ERP_APP_COLOR,
+                        }, ,
+                      ]}
+                    >
+                      {selected === "no" && (
+                        <View
+                          style={styles.radioInner}
+                        />
+                      )}
+                    </View>
+
+                    <View style={{ marginLeft: 12 }}>
+                      <Text style={styles.optionTitle}>
+                        No, Create ABHA
+                      </Text>
+
+                      <Text style={styles.optionDesc}>
+                        Create new ABHA using Aadhaar OTP
+                      </Text>
+                    </View>
+
+                  </TouchableOpacity>
+
+                </View>
+
+
+                <TouchableOpacity
+                  disabled={!selected}
+                  style={[
+                    styles.button,
+                    {
+                      backgroundColor: ERP_COLOR_CODE.ERP_APP_COLOR,
+                    },
+                    !selected && styles.disabledButton,
+                  ]}
+                  onPress={handleContinue}
+                >
+                  <Text style={styles.buttonText}>
+                    Continue
+                  </Text>
+                </TouchableOpacity>
+              </>
+            }
+          </Animated.View>
+        </Modal>
+      )}
       {
-        apiError &&  <CustomAlert
-        visible={apiError}
-        title={alertConfig.title}
-        message={alertConfig.message}
-        type={alertConfig.type}
-        onClose={() => setApiError(false)}
-        onCancel={() => setApiError(false)}
-        actionLoader={actionLoader}
-        closeHide={undefined}
-      />
+        alertVisible && <CustomAlert
+          visible={alertVisible}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          type={alertConfig.type}
+          onClose={() => setAlertVisible(false)}
+          onCancel={() => setAlertVisible(false)}
+          actionLoader={actionLoader}
+          isBottomButtonVisible={true}
+          doneText={alertConfig.title}
+          color={alertConfig.color}
+          onDone={async (remark) => {
+            try {
+              const type = `page${alertConfig.title}`;
+              await dispatch(
+                handlePageActionThunk({
+                  action: type,
+                  id: alertConfig.id.toString(),
+                  remarks: remark,
+                  page: alertConfig?.actionValue,
+                }),
+              ).unwrap();
+
+              setAlertVisible(false);
+              onRefresh();
+            } catch (err) {
+              setAlertVisible(false);
+              setAlertConfig({
+                title: "Api error",
+                message: err?.toString() || "",
+                type: "info",
+                actionValue: "",
+                color: "",
+                id: 0,
+              });
+              setApiError(true);
+            }
+          }}
+          isFromButtonList={true}
+          closeHide={undefined}
+        />
       }
-     
+
+      {
+        apiError && <CustomAlert
+          visible={apiError}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          type={alertConfig.type}
+          onClose={() => setApiError(false)}
+          onCancel={() => setApiError(false)}
+          actionLoader={actionLoader}
+          closeHide={undefined}
+        />
+      }
+
       {
         groupModalVisible1 && <GroupFilterModal
-        visible={groupModalVisible1}
-        onClose={() =>
-          setGroupModalVisible1(false)
-        }
-        data={filteredData}
-        selectedKey={primaryGroupKey}
-        onSelectKey={(key: string) => {
-          setPrimaryGroupKey(key);
-        }}
-      />
-      }
-      
-      {
-        groupModalVisible2 &&  <GroupFilterModal
-        visible={groupModalVisible2}
-        onClose={() =>
-          setGroupModalVisible2(false)
-        }
-        data={filteredData}
-        selectedKey={secondaryGroupKey}
-        onSelectKey={(key: string) => {
-          setSecondaryGroupKey(key);
-        }}
-      />
-      }
-     
-      {
-        sortingVisible &&  <SortingFilterModal
-        visible={sortingVisible}
-        onClose={() =>
-          setSortingVisible(false)
-        }
-        title="Sort By"
-        data={availableKeys}
-        selectedValue={sortingKey}
-        onSelect={(key: string) => {
-          setSortingKey(key);
-          handleSort(key);
-        }}
-        renderRight={(item: string) => {
-          const isSelected =
-            sortingKey === item;
-
-          if (!isSelected) {
-            return (
-              <Text
-                style={{
-                  fontSize: 16,
-                  color: "#9ca3af",
-                }}
-              >
-              </Text>
-            );
+          visible={groupModalVisible1}
+          onClose={() =>
+            setGroupModalVisible1(false)
           }
-
-          return (
-            <MaterialIcons
-              name={
-                sortConfig?.order === "asc"
-                  ? "keyboard-double-arrow-down"
-                  : "keyboard-double-arrow-up"
-              }
-              size={20}
-              color="#2563eb"
-            />
-          );
-        }}
-      />
+          data={filteredData}
+          selectedKey={primaryGroupKey}
+          onSelectKey={(key: string) => {
+            setPrimaryGroupKey(key);
+          }}
+        />
       }
-     
+
+      {
+        groupModalVisible2 && <GroupFilterModal
+          visible={groupModalVisible2}
+          onClose={() =>
+            setGroupModalVisible2(false)
+          }
+          data={filteredData}
+          selectedKey={secondaryGroupKey}
+          onSelectKey={(key: string) => {
+            setSecondaryGroupKey(key);
+          }}
+        />
+      }
+
+      {
+        sortingVisible && <SortingFilterModal
+          visible={sortingVisible}
+          onClose={() =>
+            setSortingVisible(false)
+          }
+          title="Sort By"
+          data={availableKeys}
+          selectedValue={sortingKey}
+          onSelect={(key: string) => {
+            setSortingKey(key);
+            handleSort(key);
+          }}
+          renderRight={(item: string) => {
+            const isSelected =
+              sortingKey === item;
+
+            if (!isSelected) {
+              return (
+                <Text
+                  style={{
+                    fontSize: 16,
+                    color: "#9ca3af",
+                  }}
+                >
+                </Text>
+              );
+            }
+
+            return (
+              <MaterialIcons
+                name={
+                  sortConfig?.order === "asc"
+                    ? "keyboard-double-arrow-down"
+                    : "keyboard-double-arrow-up"
+                }
+                size={20}
+                color="#2563eb"
+              />
+            );
+          }}
+        />
+      }
+
     </View>
   );
 };

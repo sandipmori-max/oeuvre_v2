@@ -1,5 +1,6 @@
 package com.deverp.location
 
+
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -35,7 +36,6 @@ class LocationService : Service() {
 
     companion object {
         var userDataList: MutableList<UserData> = mutableListOf()
-         var removeNotification = false
     }
 
     private val MIN_DISTANCE_METERS = 25f
@@ -66,30 +66,44 @@ class LocationService : Service() {
         return START_STICKY
     }
 
-  override fun onDestroy() {
-    Log.d("LocationService", "Service destroyed")
+    override fun onDestroy() {
+    super.onDestroy()
 
-    fusedLocationClient.removeLocationUpdates(locationCallback)
+    Log.d("LocationService", "🛑 onDestroy called")
+
+    // Stop receiving location updates
+    try {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+    } catch (e: Exception) {
+        Log.e("LocationService", "Error removing location updates", e)
+    }
+
+    // Remove all pending callbacks
     handler.removeCallbacksAndMessages(null)
 
+    // Unregister receiver safely
     try {
         unregisterReceiver(locationReceiver)
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        Log.e("LocationService", "Receiver already unregistered", e)
     }
 
-    apiExecutor.shutdown()
-
-    if (removeNotification) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-        } else {
-            @Suppress("DEPRECATION")
-            stopForeground(true)
-        }
-        removeNotification = false
+    // Shutdown executor
+    try {
+        apiExecutor.shutdownNow()
+    } catch (e: Exception) {
+        Log.e("LocationService", "Executor shutdown failed", e)
     }
 
-    super.onDestroy()
+    // Remove foreground notification immediately
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        stopForeground(STOP_FOREGROUND_REMOVE)
+    } else {
+        @Suppress("DEPRECATION")
+        stopForeground(true)
+    }
+
+    Log.d("LocationService", "✅ Foreground notification removed")
 }
 
     override fun onBind(intent: Intent?): IBinder? = null

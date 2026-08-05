@@ -178,8 +178,8 @@ const authSlice = createSlice({
       .addCase(checkAuthStateThunk.rejected, (state, action) => {
         console.log("rejected rejected rejected rejected rejected rejected ++++++++++")
         state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = false;
+        // state.user = null;
+        // state.isAuthenticated = false;
         state.error = action?.payload as string;
       })
 
@@ -206,8 +206,8 @@ const authSlice = createSlice({
       })
       .addCase(loginUserThunk.rejected, (state, action) => {
         state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = false;
+        // state.user = null;
+        // state.isAuthenticated = false;
         state.error = action.payload as string;
       })
       .addCase(switchAccountThunk.pending, state => {

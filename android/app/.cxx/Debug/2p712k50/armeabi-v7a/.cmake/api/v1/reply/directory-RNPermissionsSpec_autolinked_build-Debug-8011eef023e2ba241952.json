@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "RNPermissionsSpec_autolinked_build",
+		"source" : "/Users/deverp/Desktop/Sandip_Mori/DevERP_Mobile_app_01/node_modules/react-native-permissions/android/build/generated/source/codegen/jni"
+	}
+}

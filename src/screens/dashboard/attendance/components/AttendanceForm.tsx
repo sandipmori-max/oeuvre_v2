@@ -44,7 +44,7 @@ import { launchCamera } from "react-native-image-picker";
 
 const AttendanceForm = ({ setBlockAction, resData, isFromDashboard }: any) => {
   console.log("isFromDashboard", isFromDashboard)
-  const { user, attendanceDone: isAttendanceDone, attendanceSecurityLevel } = useAppSelector(
+  const { user, attendanceDone: isAttendanceDone, attendanceSecurityLevel, accounts } = useAppSelector(
     (state) => state?.auth,
   );
   let ATTENDANCE_LEVEL = attendanceSecurityLevel ? parseInt(attendanceSecurityLevel) : 0;
@@ -560,8 +560,31 @@ const AttendanceForm = ({ setBlockAction, resData, isFromDashboard }: any) => {
             .then((res) => {
               if (resData?.success === 1 || resData?.success === "1") {
                 dispatch(updateAttendanceState(true));
+                if (accounts.length) {
+                        const data = accounts
+                          .map((u) => {
+                            if (user?.id.toString() === u?.user?.id.toString()) {
+                              return {
+                                token: u.user.token,
+                                link: u.user.companyLink.replace(/^https:\/\//i, "http://"),
+                              };
+                            }
+                            return null;
+                          })
+                          .filter(Boolean);
+                        console.log("aaaaddgjsaddfdjfdhjfdhdhdhdfhdfdshfdsfdsfsadfadfadf")
+                        NativeModules.LocationModule.setUserTokens(data);
+                        NativeModules.LocationModule.startService();
+                        console.log("start")
+
+                      }
               } else {
                 dispatch(updateAttendanceState(false));
+                        console.log("clsoslslssllslsslslslsleed")
+
+                  NativeModules.LocationModule.clearUserTokens?.();
+                        NativeModules.LocationModule.stopService();
+                         console.log("stop")
               }
               setAttendanceDone(true);
               setAlertConfig({

@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "RNMapsSpecs_autolinked_build",
+		"source" : "/Users/deverp/Desktop/Sandip_Mori/DevERP_Mobile_app_01/node_modules/react-native-maps/android/src/main/jni"
+	}
+}
