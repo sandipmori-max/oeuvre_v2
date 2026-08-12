@@ -78,9 +78,12 @@ const Media = ({
   const getImageUri = (type: "small" | "large") => {
     const base =
       imageUri || `${baseLink}fileupload/1/${infoData?.tableName}/${infoData?.id}/${type === "small" ? `${item?.text}` : `${item?.text}`}`;
-    return `${base}?cb=${cacheBuster}`;
+   
+      console.log(`${base}?cb=${cacheBuster}`)
+      return `${base}?cb=${cacheBuster}`;
   };
 
+ 
   // -------------------- Permissions --------------------
   const requestPermission = async (
     type: "camera" | "gallery",

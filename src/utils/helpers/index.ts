@@ -564,7 +564,6 @@ export const getWorkedHours2 = (punchIn: string, punchOut: string) => {
 
   return `${hours - 1}:${mins.toString().padStart(2, "0")} hr`;
 };
-
 export const clearAllTempFiles = async () => {
   try {
     const tempDir = RNFS.TemporaryDirectoryPath;
@@ -573,14 +572,13 @@ export const clearAllTempFiles = async () => {
     for (const file of files) {
       try {
         await RNFS.unlink(file.path);
-      } catch (err) {}
+      } catch (err) {
+        // ignore individual file failure
+      }
     }
-    FastImage.clearMemoryCache();
-    FastImage.clearDiskCache();
-    if (Platform.OS === "android") {
-      // WebView.clearCache(true);
-    }
-  } catch (err) {}
+  } catch (err) {
+    // ignore temp cleanup failure
+  }
 };
 
 export const getShadowProps = (

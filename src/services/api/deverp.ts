@@ -69,7 +69,7 @@ class DevERPService {
       );
       if (
         (response as any).data?.success === 0 &&
-        (response as any).data?.message?.includes("Token invalid")
+        (response as any).data?.message?.includes("Invalid Token")
       ) {
         await this.ensureAuthToken(true);
         const retryResponse = await apiClient.post<T>(

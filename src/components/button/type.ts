@@ -8,5 +8,6 @@ export interface ERPButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   activeOpacity?: number;
-  isLoading?: any
+  isLoading?: any;
+  isApiLoading?: any
 }

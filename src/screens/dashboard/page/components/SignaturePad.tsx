@@ -45,7 +45,6 @@ const SignaturePad: React.FC = ({
     handleSignatureAttachment(`${item?.field}.jpeg; ${signature}`, item?.field);
     setCacheBuster(Date.now());
     setModalVisible(false);
-
     closePad();
   };
 
@@ -108,11 +107,11 @@ const openPad = () => {
           borderStyle: "dashed",
           borderRadius: 8,
           borderColor: ERP_COLOR_CODE.ERP_APP_COLOR,
-          backgroundColor: "#f8f9ff",
+          backgroundColor: "#fff",
         }}
       >
         <View></View>
-        <View style={{ height: 100, width: 100, backgroundColor: "#f8f9ff", }}>
+        <View style={{ height: 100, width: 100,  }}>
           <Image
             source={{ uri: getImageUri() }}
             style={styles.imageThumb}
@@ -224,37 +223,7 @@ const openPad = () => {
                   clearText={t("text.text41")}
                   confirmText={t("text.text42")}
                   backgroundColor="#FFFFFF"
-                  penColor="#000000"
-                  dataURL={savedSignature || undefined}
-                  webviewProps={{
-                      cacheEnabled: false,
-                      cacheMode: "LOAD_NO_CACHE",
-                      androidLayerType: "software",
-                  }}
-                  webStyle={`
-                    body,html {
-                      background: #fff;
-                    }
-
-                    .m-signature-pad {
-                      box-shadow: none;
-                      border: none;
-                      background-color: #fff;
-                    }
-
-                    .m-signature-pad--body {
-                      border: none;
-                      background-color: #fff;
-                    }
-
-                    canvas {
-                      background-color: #fff !important;
-                    }
-
-                    .m-signature-pad--footer {
-                      display: none;
-                    }
-                  `}
+                  penColor="#000000" 
                 />
               </View> : <>
                 <Text>Loading....</Text>

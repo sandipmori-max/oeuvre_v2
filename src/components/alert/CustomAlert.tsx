@@ -11,8 +11,8 @@ import {
   Easing,
   useWindowDimensions,
   Platform,
-} from "react-native";
-import FastImage from "react-native-fast-image";
+  Image
+} from "react-native"; 
 
 import { CustomAlertProps } from "../types";
 import { getGifSource } from "../../utils/helpers";
@@ -218,10 +218,9 @@ const isIpad =
                 transform: [{ scale: contentAnim }],
               }}
             >
-              <FastImage
+              <Image
                 source={gifSource}
-                style={styles.gif}
-                resizeMode={FastImage.resizeMode.contain}
+                style={styles.gif} 
               />
             </Animated.View>
           )}

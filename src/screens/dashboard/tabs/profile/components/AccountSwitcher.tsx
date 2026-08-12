@@ -93,7 +93,7 @@ const AccountSwitcher: React.FC<AccountSwitcherProps> = ({
   });
 const isIpad =
    ( Platform.OS === "ios" && Platform.isPad) || DeviceInfo.isTablet() || Platform.isTV;
- 
+ const profileImageTimestamp = useRef(Date.now()).current;
   // Animated values
   const slideAnim = useRef(new Animated.Value(0)).current; // modal
   const buttonAnim = useRef(new Animated.Value(0)).current; // add account button
@@ -318,7 +318,7 @@ const isIpad =
                 source={{
                   uri: `${normalizedBase}/FileUpload/1/UserMaster/${
                     item?.user?.id
-                  }/profileimage.jpeg?ts=${new Date().getTime()}`,
+                  }/profileimage.jpeg?ts=${profileImageTimestamp}`,
                   priority: FastImage.priority.normal,
                   cache: FastImage.cacheControl.web,
                 }}

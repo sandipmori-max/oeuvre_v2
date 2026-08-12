@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import { ERP_COLOR_CODE } from '../../utils/constants';
@@ -20,6 +20,15 @@ const ProfileImage = memo(({ userId, baseLink, userName }: any) => {
     initials += parts[1][0];
   }
 
+const [profileImageTimestamp, setProfileImageTimestamp] = useState(
+  Date.now()
+);
+  const profileImageUrl = useMemo(
+  () =>
+    `${baseLink}/FileUpload/1/UserMaster/${userId}/profileimage.jpeg?ts=${profileImageTimestamp}`,
+  [baseLink, userId, profileImageTimestamp]
+);
+
   return (
     <View style={{
       width: 130, height: 120,
@@ -36,7 +45,7 @@ const ProfileImage = memo(({ userId, baseLink, userName }: any) => {
 
       <FastImage
         source={{
-          uri: `${baseLink}/FileUpload/1/UserMaster/${userId}/profileimage.jpeg?ts=${new Date().getTime()}`,
+          uri: `${profileImageUrl}`,
           priority: FastImage.priority.normal,
           cache: FastImage.cacheControl.web,
         }}

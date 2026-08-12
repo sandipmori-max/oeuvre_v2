@@ -14,7 +14,8 @@ const ERPButton: React.FC<ERPButtonProps> = ({
   style,
   textStyle,
   activeOpacity = 0.8,
-  isLoading
+  isLoading,
+  isApiLoading
 }) => {
   
    
@@ -56,7 +57,7 @@ const ERPButton: React.FC<ERPButtonProps> = ({
 
         onPressIn={onPressIn}
         onPressOut={onPressOut}
-        disabled={disabled}
+        disabled={isApiLoading}
         activeOpacity={activeOpacity}
       >
         {

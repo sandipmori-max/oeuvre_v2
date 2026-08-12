@@ -21,7 +21,10 @@ import com.google.android.gms.location.*
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.Executors
-
+import android.Manifest
+import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
+import androidx.core.app.ServiceCompat
 class LocationService : Service() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -46,21 +49,103 @@ class LocationService : Service() {
 
     // ---------------- SERVICE LIFECYCLE ----------------
 
-    override fun onCreate() {
-        super.onCreate()
+  override fun onCreate() {
+    super.onCreate()
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        startForeground(1, createNotification())
+    fusedLocationClient =
+        LocationServices.getFusedLocationProviderClient(this)
 
-        startLocationUpdates()
-        startRepeatingSync()
+    startLocationForeground()
 
-        registerReceiver(
-            locationReceiver,
-            IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION)
+    if (!hasLocationPermission()) {
+        Log.e(
+            "LocationService",
+            "Location permission not granted"
         )
+        stopSelf()
+        return
     }
 
+    if (!isLocationEnabled(this)) {
+        Log.e(
+            "LocationService",
+            "Location services disabled"
+        )
+        return
+    }
+
+    startLocationUpdates()
+    startRepeatingSync()
+
+    registerReceiver(
+        locationReceiver,
+        IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION)
+    )
+}
+
+private fun hasLocationPermission(): Boolean {
+
+    val fine = checkSelfPermission(
+        Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+
+    val coarse = checkSelfPermission(
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+
+    return fine || coarse
+}
+
+private fun startLocationForeground() {
+
+    try {
+
+        val notification = createNotification()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+
+            ServiceCompat.startForeground(
+                this,
+                1,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+            )
+
+        } else {
+
+            @Suppress("DEPRECATION")
+            startForeground(
+                1,
+                notification
+            )
+        }
+
+        Log.d(
+            "LocationService",
+            "Foreground service started successfully"
+        )
+
+    } catch (e: SecurityException) {
+
+        Log.e(
+            "LocationService",
+            "Failed to start foreground location service",
+            e
+        )
+
+        stopSelf()
+
+    } catch (e: Exception) {
+
+        Log.e(
+            "LocationService",
+            "Unexpected foreground service error",
+            e
+        )
+
+        stopSelf()
+    }
+}
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("LocationService", "Service started/restarted")
         return START_STICKY
