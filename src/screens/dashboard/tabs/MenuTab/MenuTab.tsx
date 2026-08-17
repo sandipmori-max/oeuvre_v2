@@ -567,7 +567,7 @@ const MenuTab = ({
             },
           ]}
         >
-          {item.icon.includes("fa fa-") ? (
+          {item?.icon != "" && item?.icon?.includes("fa fa-") ? (
             <FontAwesome
               name={item.icon.replace("fa fa-", "")}
               color={theme === "dark" ? "black" : ERP_COLOR_CODE.ERP_APP_COLOR}
@@ -575,9 +575,9 @@ const MenuTab = ({
             />
           ) : (
             <>
-              {item?.materialIcon ? (
+              {item?.materialIcon && item?.materialIcon != "" ? (
                 <>
-                  {item?.materialIcon?.includes("fa fa-") ? (
+                  {item?.materialIcon != "" && item?.materialIcon?.includes("fa fa-") ? (
                     <FontAwesome
                       name={item?.materialIcon.replace("fa fa-", "")}
                       color={theme === "dark" ? "black" :ERP_COLOR_CODE.ERP_APP_COLOR}

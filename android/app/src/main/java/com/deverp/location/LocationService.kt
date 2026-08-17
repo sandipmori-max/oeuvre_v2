@@ -206,6 +206,7 @@ private fun startLocationForeground() {
                 fusedLocationClient.removeLocationUpdates(locationCallback)
                 sendDisabledToApi()
                 notifyLocationDisabled()
+                stopSelf()
             }
         }
     }
@@ -256,9 +257,9 @@ private fun startLocationForeground() {
 
         val request = LocationRequest.Builder(
             Priority.PRIORITY_BALANCED_POWER_ACCURACY,
-            15_000
+            60_000L
         )
-            .setMinUpdateDistanceMeters(20f)
+            .setMinUpdateDistanceMeters(50f)
             .build()
 
         locationCallback = object : LocationCallback() {

@@ -471,6 +471,10 @@
 		},
 		{
 			"backtrace" : 4,
+			"id" : "react_codegen_RNImagePickerSpec::@f66ee9a2efecfb28bee4"
+		},
+		{
+			"backtrace" : 4,
 			"id" : "react_codegen_RNMapsSpecs::@5748abef1962d24942ec"
 		},
 		{
@@ -508,10 +512,6 @@
 		{
 			"backtrace" : 4,
 			"id" : "react_codegen_RNWorkletsSpec::@c787b30dd2b0f948dced"
-		},
-		{
-			"backtrace" : 4,
-			"id" : "react_codegen_RNImagePickerSpec::@f66ee9a2efecfb28bee4"
 		}
 	],
 	"id" : "appmodules::@6890427a1f51a3e7e1df",
