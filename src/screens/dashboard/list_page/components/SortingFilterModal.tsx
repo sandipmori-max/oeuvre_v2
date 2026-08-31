@@ -16,6 +16,7 @@ type Props = {
   selectedValue?: string;
   onSelect: (item: string) => void;
   renderRight?: (item: string) => React.ReactNode;
+  configData?: any[];
 };
 
 const SortingFilterModal: React.FC<Props> = ({
@@ -26,7 +27,25 @@ const SortingFilterModal: React.FC<Props> = ({
   selectedValue,
   onSelect,
   renderRight,
+  configData = [],
 }) => {
+  /* ================= HEADER TITLE ================= */
+
+  const getHeaderTitle = (key: string) => {
+    const config = configData.find(
+      (item: any) =>
+        item?.datafield?.toLowerCase() ===
+        key?.toLowerCase()
+    );
+
+    return (
+      config?.headertext ||
+      config?.fieldtitle ||
+      config?.title ||
+      key
+    );
+  };
+
   return (
     <Modal
       visible={visible}
@@ -41,8 +60,7 @@ const SortingFilterModal: React.FC<Props> = ({
       <View
         style={{
           flex: 1,
-          backgroundColor:
-            "rgba(0,0,0,0.4)",
+          backgroundColor: "rgba(0,0,0,0.4)",
           justifyContent: "flex-end",
           alignItems: "center",
         }}
@@ -58,55 +76,65 @@ const SortingFilterModal: React.FC<Props> = ({
           }}
         >
           {/* HEADER */}
-         <View
-                   style={{
-                     padding: 14,
-                     marginVertical: 10,
-                     borderBottomWidth: 1,
-                     borderBottomColor: "#eee",
-                     flexDirection:'row',
-                     justifyContent:'space-between'
-                   }}
-                 >
-                   <Text
-                     style={{
-                       fontSize: 16,
-                       fontWeight: "700",
-                     }}
-                   >
-                     Select sort by
-                   </Text>
-       
-                     <TouchableOpacity 
-                   onPress={onClose}
-                   style={{  
-                     height: 22,
-                     width: 22,
-                     borderRadius: 4,
-                     justifyContent:'center',
-                     alignContent:'center',
-                     alignItems:'center',
-                     borderWidth: 1 
-                   }}
-                 >
-                    <MaterialIcons name="close"/>
-                 </TouchableOpacity>
-                 </View>
+
+          <View
+            style={{
+              padding: 14,
+              marginVertical: 10,
+              borderBottomWidth: 1,
+              borderBottomColor: "#eee",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "700",
+              }}
+            >
+              {title}
+            </Text>
+
+            <TouchableOpacity
+              onPress={onClose}
+              style={{
+                height: 22,
+                width: 22,
+                borderRadius: 4,
+                justifyContent: "center",
+                alignItems: "center",
+                borderWidth: 1,
+              }}
+            >
+              <MaterialIcons
+                name="close"
+                size={16}
+              />
+            </TouchableOpacity>
+          </View>
 
           {/* LIST */}
-          <FlatList
-                            bounces={false}
 
+          <FlatList
+            bounces={false}
             data={data}
             keyExtractor={(item) => item}
             renderItem={({ item }) => {
               const isSelected =
                 selectedValue === item;
 
+              // Config se display name
+              const displayTitle =
+                getHeaderTitle(item);
+
               return (
                 <TouchableOpacity
                   activeOpacity={0.8}
                   onPress={() => {
+                    // IMPORTANT:
+                    // actual field key hi return hoga
                     onSelect(item);
                     onClose();
                   }}
@@ -115,8 +143,7 @@ const SortingFilterModal: React.FC<Props> = ({
                     marginHorizontal: 12,
                     paddingVertical: 14,
                     borderBottomWidth: 1,
-                    borderBottomColor:
-                      "#f3f4f6",
+                    borderBottomColor: "#f3f4f6",
                     backgroundColor:
                       isSelected
                         ? "#eef2ff"
@@ -127,8 +154,7 @@ const SortingFilterModal: React.FC<Props> = ({
                     style={{
                       flexDirection: "row",
                       alignItems: "center",
-                      justifyContent:
-                        "space-between",
+                      justifyContent: "space-between",
                     }}
                   >
                     <Text
@@ -139,11 +165,9 @@ const SortingFilterModal: React.FC<Props> = ({
                           isSelected
                             ? "700"
                             : "500",
-                        textTransform:
-                          "capitalize",
                       }}
                     >
-                      {item}
+                      {displayTitle}
                     </Text>
 
                     {renderRight?.(item)}
@@ -152,7 +176,6 @@ const SortingFilterModal: React.FC<Props> = ({
               );
             }}
           />
- 
         </View>
       </View>
     </Modal>

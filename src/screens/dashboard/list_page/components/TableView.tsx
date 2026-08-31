@@ -5,6 +5,7 @@ import {
   Dimensions,
   FlatList,
   ScrollView,
+  Image
 } from "react-native";
 
 import React, {
@@ -38,6 +39,8 @@ const TableView = ({
   secondaryGroupKey = "",
 }: any) => {
   const navigation = useNavigation();
+
+  console.log("filteredData", filteredData)
 
   const { t } = useTranslations();
 
@@ -94,19 +97,31 @@ const TableView = ({
 
   /* ================= ALL KEYS ================= */
 
+  const getHeaderConfig = (key: string) => {
+    if (!key || !configData?.length) {
+      return null;
+    }
+
+    return configData.find(
+      (cfg: any) =>
+        cfg?.datafield?.toLowerCase() ===
+        key?.toLowerCase()
+    );
+  };
+
   const allKeys =
     filteredData?.length > 0
       ? [
-          "#ID",
-          ...Object.keys(
-            filteredData?.[0],
-          ).filter(
-            (key) =>
-              key !== "id" &&
-              key !== "html" &&
-              !key.startsWith("btn_"),
-          ),
-        ]
+        "#ID",
+        ...Object.keys(
+          filteredData?.[0],
+        ).filter(
+          (key) =>
+            key !== "id" &&
+            key !== "html" &&
+            !key.startsWith("btn_"),
+        ),
+      ]
       : [];
 
   /* ================= FORMAT VALUE ================= */
@@ -218,62 +233,48 @@ const TableView = ({
       <View
         style={{
           flexDirection: "row",
-          backgroundColor:
-            ERP_COLOR_CODE.ERP_APP_COLOR,
-          height: 40,
+          backgroundColor: ERP_COLOR_CODE.ERP_APP_COLOR,
         }}
       >
-        {allKeys.map((key, idx) => (
-          <View
-            key={`${key}-${idx}`}
-            style={{
-              width:
-                key === "#ID"
-                  ? 40
-                  : columnWidth,
+        {allKeys.map((key, idx) => {
+          const config = getHeaderConfig(key);
 
-              minWidth:
-                key === "#ID"
-                  ? 40
-                  : 110,
+          const headerTitle =
+            config?.headertext ||
+            config?.fieldtitle ||
+            config?.title ||
+            formatHeaderTitle(key);
 
-              maxWidth:
-                key === "#ID"
-                  ? 40
-                  : 150,
-
-              height: 40,
-
-              paddingHorizontal: 8,
-
-              borderRightWidth: 1,
-
-              borderRightColor:
-                "rgba(255,255,255,0.15)",
-
-              justifyContent: "center",
-
-              alignItems:
-                key === "#ID"
-                  ? "center"
-                  : "flex-start",
-            }}
-          >
-            <Text
-              numberOfLines={1}
+          return (
+            <View
+              key={`${key}-${idx}`}
               style={{
-                color: "#fff",
-                fontWeight: "800",
-                fontSize: 11,
-                textTransform: "uppercase",
+                width: key === "#ID" ? 40 : columnWidth,
+                minWidth: key === "#ID" ? 40 : 110,
+                maxWidth: key === "#ID" ? 40 : 150,
+                height: 40,
+                paddingHorizontal: 8,
+                borderRightWidth: 1,
+                borderRightColor: "rgba(255,255,255,0.15)",
+                justifyContent: "center",
+                alignItems:
+                  key === "#ID" ? "center" : "flex-start",
               }}
             >
-              {key === "#ID"
-                ? "#ID"
-                : formatHeaderTitle(key)}
-            </Text>
-          </View>
-        ))}
+              <Text
+                numberOfLines={1}
+                style={{
+                  color: "#fff",
+                  fontWeight: "800",
+                  fontSize: 11,
+                  textTransform: "uppercase",
+                }}
+              >
+                {key === "#ID" ? "#ID" : headerTitle}
+              </Text>
+            </View>
+          );
+        })}
       </View>
     );
   };
@@ -301,9 +302,9 @@ const TableView = ({
         }}
         style={{
           backgroundColor:
-            ERP_COLOR_CODE.ERP_BORDER_LINE,
-          
-          paddingVertical: 10,
+            '#d9edf8',
+
+          paddingVertical: 4,
           paddingHorizontal: 12,
 
           borderBottomWidth: 1,
@@ -316,8 +317,7 @@ const TableView = ({
 
           alignItems: "center",
 
-          marginTop: 1,
-          width: Dimensions.get('screen').width 
+          width: Dimensions.get('screen').width
         }}
       >
         <Text
@@ -327,18 +327,15 @@ const TableView = ({
             fontWeight: "700",
           }}
         >
-          {title}
+          [-] {title}
         </Text>
 
         <Text
           style={{
-            color: "black",
-            fontSize: 13,
-            fontWeight: "600",
+            color: "black", 
           }}
         >
-          {count} Items{" "}
-          {isCollapsed ? "▼" : "▲"}
+          {count}  {isCollapsed ? "▼" : "▲"}
         </Text>
       </TouchableOpacity>
     );
@@ -368,7 +365,7 @@ const TableView = ({
           );
         }}
         style={{
-          backgroundColor: "#f1f5f9",
+          backgroundColor: "#dfebf8",
 
           paddingVertical: 8,
           paddingHorizontal: 18,
@@ -425,7 +422,7 @@ const TableView = ({
           if (
             parsedConfig?.editentry === 1 ||
             parsedConfig?.editentry ===
-              "1"
+            "1"
           ) {
             // setIsFilterVisible(false);
 
@@ -468,118 +465,112 @@ const TableView = ({
               <View
                 key={`${key}-${idx}`}
                 style={{
-                  width:
-                    key === "#ID"
-                      ? 40
-                      : columnWidth,
-
+                  width: key === "#ID" ? 40 : columnWidth,
                   minWidth:
-                    key === "#ID"
-                      ? 40
-                      : 110,
-
-                  maxWidth:
-                    key === "#ID"
-                      ? 40
-                      : 150,
-
+                    key === "#ID" ? 40 : 110,
+                  maxWidth: key === "#ID" ? 40 : 150,
                   borderRightWidth: 1,
-
-                  borderRightColor:
-                    "#edf2f7",
-
-                  justifyContent:
-                    "center",
-
-                  alignItems:
-                    key === "#ID"
-                      ? "center"
-                      : "flex-start",
-
+                  borderRightColor: "#edf2f7",
+                  justifyContent: "center",
+                  alignItems: key === "#ID" ? "center" : "flex-start",
                   paddingHorizontal: 4,
-
                   paddingVertical: 6,
                 }}
               >
-                <Text
-                  selectable
-                  numberOfLines={2}
-                  style={{
-                    fontSize: 12,
-                    color: "#0f172a",
-
-                    fontWeight:
-                      key === "#ID"
-                        ? "700"
-                        : "500",
-                  }}
-                >
-                  {value}
-                </Text>
+                {key?.toLowerCase() === "image" &&
+                  item?.[key] ? (
+                  <Image
+                    source={{
+                      uri: item[key],
+                    }}
+                    style={{
+                      width: 45,
+                      height: 45,
+                      borderRadius: 6,
+                      resizeMode: "cover",
+                    }}
+                  />
+                ) : (
+                  <Text
+                    selectable
+                    numberOfLines={2}
+                    style={{
+                      fontSize: 12,
+                      color: "#0f172a",
+                      fontWeight:
+                        key === "#ID"
+                          ? "700"
+                          : "500",
+                    }}
+                  >
+                    {value}
+                  </Text>
+                )}
               </View>
             );
           })}
         </View>
 
         {/* ACTION BUTTONS */}
-      {("btn_edit" in item ? item?.btn_edit !== "" : true) &&
-                  btnKeys?.length > 0 && (
-                    <View
+        {("btn_edit" in item ? item?.btn_edit !== "" : true) &&
+          btnKeys?.length > 0 && (
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                marginTop: 0,
+                gap: 1,
+                marginBottom: 4
+              }}
+            >
+              {btnKeys?.map((key, idx) => {
+                const actionValue = item[key];
+                const { label, color } = getButtonMeta(key);
+
+                return (
+                  <TouchableOpacity
+                    key={`${key}-${idx}`}
+                    style={{
+                      backgroundColor: authUser ? "#C6C6C6" : color,
+                      paddingHorizontal: 6,
+                      paddingVertical: 4,
+                      borderRadius: 4,
+                      flexGrow: 1,
+                      maxWidth: screenWidth / 4,
+                      alignItems: "center",
+                    }}
+                    onPress={() => {
+                      if (authUser) return;
+                      handleActionButtonPressed(
+                        actionValue,
+                        label,
+                        color,
+                        item?.id,
+                        item,
+                      );
+                    }}
+                  >
+                    <Text
                       style={{
-                        flexDirection: "row",
-                        flexWrap: "wrap",
-                        marginTop: 0,
-                        gap: 1,
+                        color: ERP_COLOR_CODE.ERP_WHITE,
+                        fontWeight: "600",
+                        fontSize: 12,
                       }}
                     >
-                      {btnKeys?.map((key, idx) => {
-                        const actionValue = item[key];
-                        const { label, color } = getButtonMeta(key);
-      
-                        return (
-                          <TouchableOpacity
-                            key={`${key}-${idx}`}
-                            style={{
-                              backgroundColor: authUser ? "#C6C6C6" : color,
-                              paddingHorizontal: 6,
-                              paddingVertical: 4,
-                              borderRadius: 4,
-                              flexGrow: 1,
-                              maxWidth: screenWidth / 4,
-                              alignItems: "center",
-                            }}
-                            onPress={() => {
-                              if (authUser) return;
-                              handleActionButtonPressed(
-                                actionValue,
-                                label,
-                                color,
-                                item?.id,
-                                item,
-                              );
-                            }}
-                          >
-                            <Text
-                              style={{
-                                color: ERP_COLOR_CODE.ERP_WHITE,
-                                fontWeight: "600",
-                                fontSize: 12,
-                              }}
-                            >
-                              {label}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                  )}
+                      {label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
 
         {/* FOOTER */}
-        
 
-         <View>
-            {item?.html && <MemoizedFooterView item={item} index={index} />}
-          </View>
+
+        <View>
+          {item?.html && <MemoizedFooterView item={item} index={index} />}
+        </View>
       </TouchableOpacity>
     );
   };
@@ -611,8 +602,8 @@ const TableView = ({
       style={{
         margin: 4,
         flex: 1,
-       backgroundColor:
-            ERP_COLOR_CODE.ERP_BORDER_LINE,
+        backgroundColor:
+          "#d9edf8",
       }}
     >
       <ScrollView
@@ -627,7 +618,7 @@ const TableView = ({
         <View>
           <FlatList
             data={groupedData}
-                              bounces={false}
+            bounces={false}
 
             keyExtractor={(
               item: any,
@@ -651,25 +642,28 @@ const TableView = ({
             }: any) => {
               const isCollapsed =
                 collapsedGroups?.[
-                  group?.title
+                group?.title
                 ];
 
               return (
                 <View>
                   {/* PRIMARY GROUP */}
+                  <View style={{ height: 5 }} />
                   <GroupHeader
                     title={group?.title}
                     count={
                       secondaryGroupKey
                         ? Object.values(
-                            group?.children ||
-                              {},
-                          ).flat()
-                            .length
+                          group?.children ||
+                          {},
+                        ).flat()
+                          .length
                         : group?.data
-                            ?.length
+                          ?.length
                     }
                   />
+                  <View style={{ height: 5 }} />
+
 
                   {/* DATA */}
                   {!isCollapsed && (
@@ -678,7 +672,7 @@ const TableView = ({
                       {secondaryGroupKey ? (
                         Object.keys(
                           group?.children ||
-                            {},
+                          {},
                         ).map(
                           (
                             subGroupName,
@@ -686,14 +680,14 @@ const TableView = ({
                             const subData =
                               group
                                 ?.children?.[
-                                subGroupName
+                              subGroupName
                               ];
 
                             const subKey = `${group?.title}_${subGroupName}`;
 
                             const subCollapsed =
                               collapsedSubGroups?.[
-                                subKey
+                              subKey
                               ];
 
                             return (

@@ -93,7 +93,7 @@ const List = ({ selectedMonth, showFilter, fromDate, toDate }: any) => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
   const [listData, setListData] = useState<any[]>([]);
-  console.log("listData---------------- ",listData)
+  console.log("listData---------------- ", listData)
   const [parsedError, setParsedError] = useState<any>();
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -452,7 +452,6 @@ const List = ({ selectedMonth, showFilter, fromDate, toDate }: any) => {
                       style={{
                         width: Dimensions.get("window").width * 0.4,
                         borderRadius: 8,
-                        elevation: 2,
                         backgroundColor: theme === "dark" ? "black" : "white",
                         borderColor: theme === "dark" ? "white" : "black",
                       }}
@@ -513,7 +512,7 @@ const List = ({ selectedMonth, showFilter, fromDate, toDate }: any) => {
                       }}
                     >
                       <FlatList
-                                        bounces={false}
+                        bounces={false}
 
                         data={timelineData}
                         keyExtractor={(item, index) => index.toString()}
@@ -925,7 +924,7 @@ const List = ({ selectedMonth, showFilter, fromDate, toDate }: any) => {
         <>
           {listData.length > 0 ? (
             <FlatList
-                              bounces={false}
+              bounces={false}
 
               data={["calendar"]}
               keyExtractor={(item, index) => index.toString()}
@@ -1017,7 +1016,6 @@ const List = ({ selectedMonth, showFilter, fromDate, toDate }: any) => {
                             width: Dimensions.get("window").width - 20,
                             alignSelf: "center",
                             borderRadius: 8,
-                            elevation: 2,
                             backgroundColor:
                               theme === "dark" ? "black" : "white",
                           }}
@@ -1140,7 +1138,7 @@ const List = ({ selectedMonth, showFilter, fromDate, toDate }: any) => {
                       }}
                     >
                       <FlatList
-                                        bounces={false}
+                        bounces={false}
 
                         data={timelineData}
                         keyExtractor={(item, index) => index.toString()}

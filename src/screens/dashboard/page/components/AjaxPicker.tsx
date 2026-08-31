@@ -106,8 +106,6 @@ const AjaxPicker = ({
   };
 
   const handleSelect = (opt: any) => {
-
-    console.log("opt", opt)
     const afterDash = item?.ddl?.split("-")[1];
     const arr = afterDash?.split(",");
 
@@ -150,7 +148,6 @@ const AjaxPicker = ({
     setIsSearchInputAllowed(hasSingleKeyValue(optionsRef.current));
   }, [search]);
 
-  console.log('isssssssss', isSearchInputAllowed, options)
   return (
     <View style={{ marginBottom: Platform.OS === 'android' ? 6 : 8 }}>
       <LableInfo isFromChild={isFromChild}
@@ -334,19 +331,24 @@ const AjaxPicker = ({
                 >
                   {options?.length > 0 ? (
                     options?.map((opt: any, i: number) => {
-
-                      console.log("opt-=-=-=-=-=------------", opt)
                       const entries = Object.entries(opt).filter(
                         ([key, value]) =>
                           value !== null &&
                           value !== undefined &&
                           String(value).trim() !== "" &&
                           !key.startsWith("[") &&
-                          !key.endsWith("]")
+                          !key.endsWith("]") &&
+                          !key.toLowerCase().includes("id")
                       );
-                      console.log("entries-=-=-=-=-=------------", entries)
-                      const isGrid = entries.length >= 3;
-                      console.log("isGrid-=-=-=-=-=------------", isGrid)
+
+                      const getItemWidth = () => {
+                        if (entries.length === 1) return "100%";
+                        if (entries.length === 2) return "50%";
+                        return "33.33%";
+                      };
+
+                      const isGrid = entries.length >= 2;
+
                       return (
                         <TouchableOpacity
                           key={i}
@@ -354,8 +356,6 @@ const AjaxPicker = ({
                             styles.option,
                             {
                               paddingVertical: 12,
-
-
                               backgroundColor:
                                 i % 2 === 0
                                   ? theme === "dark"
@@ -375,14 +375,13 @@ const AjaxPicker = ({
                             style={{
                               flexDirection: isGrid ? "row" : "column",
                               flexWrap: isGrid ? "wrap" : "nowrap",
-
                             }}
                           >
-                            {entries?.map(([key, value], idx) => (
+                            {entries.map(([key, value], idx) => (
                               <View
                                 key={idx}
                                 style={{
-                                  width: isGrid ? "33.33%" : "100%",
+                                  width: getItemWidth(),
                                   paddingVertical: 4,
                                   paddingHorizontal: 6,
                                 }}
@@ -397,18 +396,15 @@ const AjaxPicker = ({
                                       fontSize:
                                         key === label?.toLowerCase() ? 16 : 14,
                                       fontWeight:
-                                        key === label?.toLowerCase()
-                                          ? "700"
-                                          : "400",
+                                        key === label?.toLowerCase() ? "700" : "400",
                                     },
                                     {
-                                      color:
-                                        theme === "dark" ? "white" : "#000",
+                                      color: theme === "dark" ? "white" : "#000",
                                     },
                                   ]}
                                   numberOfLines={1}
-                                  text={String(`${value}`)}
-                                ></TranslatedText>
+                                  text={String(value)}
+                                />
                               </View>
                             ))}
                           </View>
@@ -463,11 +459,9 @@ const AjaxPicker = ({
       </Modal>
 
       {errors[item.field] && <InputError error={errors[item?.field]} />}
+      
     </View>
   );
 };
 
 export default React.memo(AjaxPicker);
-
-// getmobileapp
-// mobileappmenu

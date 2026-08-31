@@ -24,6 +24,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
 }) => {
   const { t } = useTranslations();
   const { token: fcmToken } = useFcmToken();
+
   const [isApiLoading, setIsApiLoading] = useState(false)
 
   const [focusedField, setFocusedField] = useState<string | null>(null);

@@ -51,7 +51,7 @@ import {
 import TranslatedText from "../home/TranslatedText";
 import { styles } from "./style";
 import { formatDateForAPI } from "../../../../utils/helpers";
-import DeviceInfo from "react-native-device-info"; 
+import DeviceInfo from "react-native-device-info";
 const accentColors = [
   "#dbe0f5ff",
   "#c8f3edff",
@@ -92,8 +92,8 @@ const MenuTab = ({
   const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
   const [showStarsOnly, setShowStarsOnly] = useState(false);
   const [showFull, setShowFull] = useState(false);
- const isIpad =
-   ( Platform.OS === "ios" && Platform.isPad) || DeviceInfo.isTablet() || Platform.isTV;
+  const isIpad =
+    (Platform.OS === "ios" && Platform.isPad) || DeviceInfo.isTablet() || Platform.isTV;
   const [showSearch, setShowSearch] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [filteredList, setFilteredList] = useState(allList);
@@ -104,6 +104,7 @@ const MenuTab = ({
     textColor: "black",
   });
   const [taps, setTaps] = useState({});
+
   const sortedList = [...filteredList].sort((a, b) => {
     const countA = taps[a.id] || 0;
     const countB = taps[b.id] || 0;
@@ -113,8 +114,8 @@ const MenuTab = ({
   const list = showStarsOnly
     ? sortedList
     : showBookmarksOnly
-    ? filteredList.filter((i) => bookmarks[i.id])
-    : filteredList;
+      ? filteredList.filter((i) => bookmarks[i.id])
+      : filteredList;
   const showToast = (msg, backgroundColor, color) =>
     setToast({
       visible: true,
@@ -139,9 +140,9 @@ const MenuTab = ({
       words.length === 1
         ? words[0].slice(0, 2)
         : words
-            .slice(0, 2)
-            .map((w) => w[0])
-            .join("");
+          .slice(0, 2)
+          .map((w) => w[0])
+          .join("");
 
     return result.toUpperCase();
   }
@@ -207,11 +208,11 @@ const MenuTab = ({
       headerStyle: {
         backgroundColor:
           theme === "dark" ? "black" : ERP_COLOR_CODE.ERP_APP_COLOR,
-         
+
       },
       headerBackTitle: "",
       headerTintColor: "white",
- 
+
       headerTitle: () =>
         showSearch ? (
           <View
@@ -319,35 +320,35 @@ const MenuTab = ({
               <ERPIcon name="search" onPress={() => setShowSearch(true)} />
             )}
 
-              <>
-                <ERPIcon
-                  name={isHorizontal ? "dashboard" : "list"}
-                  onPress={() => setIsHorizontal((p) => !p)}
-                />
+            <>
+              <ERPIcon
+                name={isHorizontal ? "dashboard" : "list"}
+                onPress={() => setIsHorizontal((p) => !p)}
+              />
 
-                <ERPIcon
-                  name={!showBookmarksOnly ? "bookmark-outline" : "bookmark"}
-                  onPress={() => {
-                    setShowStarsOnly(false);
-                    setShowBookmarksOnly((p) => !p);
-                  }}
-                />
+              <ERPIcon
+                name={!showBookmarksOnly ? "bookmark-outline" : "bookmark"}
+                onPress={() => {
+                  setShowStarsOnly(false);
+                  setShowBookmarksOnly((p) => !p);
+                }}
+              />
 
-                <ERPIcon
-                  name={!showStarsOnly ? "trending-down" : "trending-up"}
-                  onPress={() => {
-                    setShowBookmarksOnly(false);
-                    setShowStarsOnly((p) => !p);
-                  }}
-                />
+              <ERPIcon
+                name={!showStarsOnly ? "trending-down" : "trending-up"}
+                onPress={() => {
+                  setShowBookmarksOnly(false);
+                  setShowStarsOnly((p) => !p);
+                }}
+              />
 
-                <ERPIcon
-                  name={!hideTab ? "fullscreen" : "fullscreen-exit"}
-                  onPress={() => setHideTab(!hideTab)}
-                />
-              </>
+              <ERPIcon
+                name={!hideTab ? "fullscreen" : "fullscreen-exit"}
+                onPress={() => setHideTab(!hideTab)}
+              />
+            </>
 
-            
+
           </View>
         ),
 
@@ -397,7 +398,7 @@ const MenuTab = ({
             return () => clearTimeout(timer);
           });
       }
-      return () => {};
+      return () => { };
     }, [isAuthenticated, activeToken, isRefresh]),
   );
 
@@ -484,160 +485,269 @@ const MenuTab = ({
   const renderItem = ({ item, index }: any) => {
     const backgroundColor = accentColors[index % accentColors.length];
     return (
-      <TouchableOpacity
-        style={[
-          list.length > 8 ? styles.cardV2 : styles.card,
-          theme === "dark" && { borderColor: backgroundColor, borderWidth: 2 },
-          {
-            backgroundColor: theme === "dark" ? "black" : backgroundColor,
-            flexDirection: isHorizontal ? "row" : "column",
-          },
-          isHorizontal && {
-            paddingVertical: 8,
-            paddingHorizontal: 8,
-            marginBottom: 8,
-          },
-        ]}
-        onPress={async () => {
-          if (!item.url.includes(".")) {
-            dispatch(updateSelectedBranchIdsState(""));
-            dispatch(updateSelectedFromDateState(""));
-            dispatch(updateSelectedToDateState(""));
-            const now = new Date();
-            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-            const lastDay = new Date();
-            const fromDateStr = formatDateForAPI(firstDay);
-            const toDateStr = formatDateForAPI(lastDay);
-            dispatch(updateSelectedFromDateState(fromDateStr));
-            dispatch(updateSelectedToDateState(toDateStr));
+      <>
 
-            const db = await getDBConnection();
-            let raw = null;
-            try {
-              raw = await dispatch(
-                getERPConfigDataThunk({
-                  page: item?.url,
-                }),
-              ).unwrap();
-
-              console.log("++++++++++++++++++++++++++++++++++++++raw", raw);
-            } catch (error) {
-              console.log("++++++++++++++++++++++++++++++++++++++error", error);
-            }
-
-            const parsedConfig = extractConfig(raw);
-
-            console.log("FINAL CONFIG:", parsedConfig);
-            console.log("parsedConfig:", parsedConfig);
-            console.log(
-              "+++++++++++++++++parsedConfig+++++++++++++++++++++parsedConfig",
-              parsedConfig,
-            );
-
-            await increaseTapCount(db, item.id, user?.id);
-            navigation.navigate("List", { item, parsedConfig });
-          } else {
-            const db = await getDBConnection();
-            await increaseTapCount(db, item.id, user?.id);
-            navigation.navigate("Privacy Policy", { item });
-          }
-        }}
-      >
         <TouchableOpacity
-          onPress={() => toggleBookmark(item?.name, item.id)}
-          style={{ position: "absolute", top: 0, right: 0 }}
-        >
-          <MaterialIcons
-            color={theme === "dark" ? "white" : "gray"}
-            name={bookmarks[item.id] ? "bookmark" : "bookmark-outline"}
-            size={20}
-          />
-        </TouchableOpacity>
-
-        <View
           style={[
-            list.length > 8 ? styles.iconContainerV2 : styles.iconContainer,
-            theme === "dark" && { borderColor: "white" },
+            list.length > 8 ? styles.cardV2 : styles.card,
+            theme === "dark" && { borderColor: backgroundColor, borderWidth: 2 },
             {
-              backgroundColor:
-                theme === "dark" ? backgroundColor : ERP_COLOR_CODE.ERP_WHITE,
+              backgroundColor: theme === "dark" ? "black" : backgroundColor,
+              flexDirection: isHorizontal ? "row" : "column",
             },
-            item?.app_menu_icon && {
-              backgroundColor: "transparent",
+            isHorizontal && {
+              paddingVertical: 8,
+              paddingHorizontal: 8,
+              marginBottom: 8,
             },
+            item.url.includes(".") ? {
+              marginBottom: 4
+            } : {
+              marginBottom: 4
+            }
           ]}
-        >
-          {item?.icon != "" && item?.icon?.includes("fa fa-") ? (
-            <FontAwesome
-              name={item.icon.replace("fa fa-", "")}
-              color={theme === "dark" ? "black" : ERP_COLOR_CODE.ERP_APP_COLOR}
-              size={18}
-            />
-          ) : (
-            <>
-              {item?.materialIcon && item?.materialIcon != "" ? (
-                <>
-                  {item?.materialIcon != "" && item?.materialIcon?.includes("fa fa-") ? (
-                    <FontAwesome
-                      name={item?.materialIcon.replace("fa fa-", "")}
-                      color={theme === "dark" ? "black" :ERP_COLOR_CODE.ERP_APP_COLOR}
-                      size={18}
-                    />
-                  ) : (
-                    <MaterialIcons
-                      name={item?.materialIcon || "widgets"}
-                      color={ theme === "dark" ? "black" : ERP_COLOR_CODE.ERP_APP_COLOR}
-                      size={18}
-                    />
-                  )}
-                </>
-              ) : (
-                <TranslatedText
-                  numberOfLines={1}
-                  text={getInitials(item?.name)}
-                  style={[
-                    styles.iconTextV2,
-                    theme === "dark" && { color: "black" },
-                  ]}
-                ></TranslatedText>
-              )}
-            </>
-          )}
-        </View>
+          onPress={async () => {
+            if (!item.url.includes(".")) {
+              dispatch(updateSelectedBranchIdsState(""));
+              dispatch(updateSelectedFromDateState(""));
+              dispatch(updateSelectedToDateState(""));
 
-        <View
-          style={{
-            marginLeft: isHorizontal ? 16 : 0,
-            marginTop: isHorizontal ? 0 : 4,
+              let raw = null;
+              try {
+                raw = await dispatch(
+                  getERPConfigDataThunk({
+                    page: item?.url,
+                  }),
+                ).unwrap();
+
+                console.log("++++++++++++++++++++++++++++++++++++++raw", raw);
+              } catch (error) {
+                console.log("++++++++++++++++++++++++++++++++++++++error", error);
+              }
+
+              const parsedConfig = extractConfig(raw);
+
+              let dateType = parsedConfig?.dateType || "Month"
+
+              const now = new Date();
+
+              let firstDay: Date;
+              const lastDay = new Date();
+
+              switch (dateType) {
+                case "Today":
+                  firstDay = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate()
+                  );
+                  break;
+
+                case "Month":
+                  firstDay = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    1
+                  );
+                  break;
+
+                case "Year":
+                  firstDay = new Date(
+                    now.getFullYear(),
+                    0,
+                    1
+                  );
+                  break;
+
+                default:
+                  firstDay = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    1
+                  );
+                  break;
+              }
+              const fromDateStr = formatDateForAPI(firstDay);
+              const toDateStr = formatDateForAPI(lastDay);
+              dispatch(updateSelectedFromDateState(fromDateStr));
+              dispatch(updateSelectedToDateState(toDateStr));
+
+              const db = await getDBConnection();
+
+
+              console.log("FINAL CONFIG:", parsedConfig);
+              console.log("parsedConfig:", parsedConfig);
+              console.log(
+                "+++++++++++++++++parsedConfig+++++++++++++++++++++parsedConfig",
+                parsedConfig,
+              );
+
+              await increaseTapCount(db, item.id, user?.id);
+              navigation.navigate("List", { item, parsedConfig });
+            } else {
+              const db = await getDBConnection();
+              await increaseTapCount(db, item.id, user?.id);
+              navigation.navigate("Privacy Policy", { item });
+            }
           }}
         >
-          <TranslatedText
-            numberOfLines={2}
-            text={item.name}
+          <TouchableOpacity
+            onPress={() => toggleBookmark(item?.name, item.id)}
+            style={{ position: "absolute", top: 0, right: 0 }}
+          >
+            <MaterialIcons
+              color={theme === "dark" ? "white" : "gray"}
+              name={bookmarks[item.id] ? "bookmark" : "bookmark-outline"}
+              size={20}
+            />
+          </TouchableOpacity>
+
+
+
+
+          <View
             style={[
-              list.length > 8 ? styles.titleV2 : styles.title,
+              list.length > 8 ? styles.iconContainerV2 : styles.iconContainer,
+              theme === "dark" && { borderColor: "white" },
               {
-                maxWidth: isHorizontal ? (isIpad ? 140 : 220) : "auto",
-                textAlign: isHorizontal ? "left" : "center",
+                backgroundColor:
+                  theme === "dark" ? backgroundColor : ERP_COLOR_CODE.ERP_WHITE,
               },
-              theme === "dark" && { color: "white" },
+              item?.app_menu_icon && {
+                backgroundColor: "transparent",
+              },
             ]}
-          ></TranslatedText>
-          {item?.title && (
+          >
+            {item?.icon != "" && item?.icon?.includes("fa fa-") ? (
+              <FontAwesome
+                name={item.icon.replace("fa fa-", "")}
+                color={theme === "dark" ? "black" : ERP_COLOR_CODE.ERP_6C757D}
+                size={18}
+              />
+            ) : (
+              <>
+                {item?.materialIcon && item?.materialIcon != "" ? (
+                  <>
+                    {item?.materialIcon != "" && item?.materialIcon?.includes("fa fa-") ? (
+                      <FontAwesome
+                        name={item?.materialIcon.replace("fa fa-", "")}
+                        color={theme === "dark" ? "black" : ERP_COLOR_CODE.ERP_6C757D}
+                        size={18}
+                      />
+                    ) : (
+                      <MaterialIcons
+                        name={item?.materialIcon || "widgets"}
+                        color={theme === "dark" ? "black" : ERP_COLOR_CODE.ERP_6C757D}
+                        size={18}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <TranslatedText
+                    numberOfLines={1}
+                    text={getInitials(item?.name)}
+                    style={[
+                      styles.iconTextV2,
+                      theme === "dark" && { color: "black" },
+                    ]}
+                  ></TranslatedText>
+                )}
+              </>
+            )}
+          </View>
+
+          <View
+            style={{
+              marginLeft: isHorizontal ? 16 : 0,
+              marginTop: isHorizontal ? 0 : 4,
+             }}
+          >
             <TranslatedText
-              text={item?.title}
               numberOfLines={2}
+              text={item.name}
               style={[
-                list.length > 8 ? styles.subtitleV2 : styles.subtitle,
+                 
+                 
                 theme === "dark" && { color: "white" },
-                !isHorizontal && {
-                  textAlign: "center",
-                },
               ]}
             ></TranslatedText>
-          )}
-        </View>
-      </TouchableOpacity>
+            {item?.title && (
+              <TranslatedText
+                text={item?.title}
+                numberOfLines={2}
+                style={[
+                  list.length > 8 ? styles.subtitleV2 : styles.subtitle,
+                  theme === "dark" && { color: "white" },
+                  !isHorizontal && {
+                    textAlign: "center",
+                  },
+                ]}
+              ></TranslatedText>
+            )}
+          </View>
+        </TouchableOpacity>
+        {
+          !item.url.includes(".") &&
+
+
+          <TouchableOpacity
+            onPress={async () => {
+
+              console.log("item", item)
+              let raw = null;
+              try {
+                raw = await dispatch(
+                  getERPConfigDataThunk({
+                    page: item?.url,
+                  }),
+                ).unwrap();
+                console.log("++++++++++++++++++++++++++++++++++++++raw", raw);
+              } catch (error) {
+                console.log("++++++++++++++++++++++++++++++++++++++error", error);
+                return;
+              }
+              const parsedConfig = extractConfig(raw);
+              if (!parsedConfig) {
+                return;
+              }
+              if (parsedConfig?.newentry === 1 || parsedConfig?.newentry === "1") {
+                navigation.navigate("Page", {
+                  item,
+                  title: item?.name,
+                  isFromNew: true,
+                  url: item?.url,
+                  pageTitle: item?.name,
+                  isFromBusinessCard: false,
+                  isFromProfile: false,
+                });
+              }
+            }}
+            style={{
+              marginHorizontal: 6,
+              height: 24,
+              justifyContent: 'center',
+              borderColor: backgroundColor,
+              alignContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'row',
+              borderRadius: 4,
+              marginBottom: 8,
+              borderWidth: 2
+            }}
+          >
+            <MaterialIcons
+              color={theme === "dark" ? "white" : "gray"}
+              name={'add'}
+              size={20}
+            />
+            <Text style={
+              {
+                color: theme === "dark" ? "white" : "gray"
+              }
+            }> New</Text>
+          </TouchableOpacity>
+        }
+      </>
     );
   };
 
@@ -678,7 +788,7 @@ const MenuTab = ({
                   alignContent: "center",
                   alignItems: "center",
                   marginBottom: 6,
-                  backgroundColor:  theme === "dark" ? "black" : "#fffcfc",
+                  backgroundColor: theme === "dark" ? "black" : "#fffcfc",
                   width: "98%",
                   justifyContent: "space-between",
                   padding: 4,
@@ -728,7 +838,7 @@ const MenuTab = ({
             )}
             renderItem={({ item, index, section }) => {
               const items = section.data;
-                const chunkSize = isIpad ? isLandscape ? 6 : 4 : isLandscape ? 4 : 3;
+              const chunkSize = isIpad ? isLandscape ? 6 : 4 : isLandscape ? 4 : 3;
 
 
               // sirf first index pe pura section render karo
@@ -740,20 +850,32 @@ const MenuTab = ({
                 rows.push(items.slice(i, i + chunkSize));
               }
 
+
+
               return (
                 <View style={styles.sectionContainer}>
                   {rows.map((row, rowIndex) => (
                     <View key={rowIndex} style={{ flexDirection: "row" }}>
-                      {row.map((child, childIndex) => (
-                        <View
-                          key={childIndex}
-                          style={{
-                            width: isIpad ? isLandscape ? "16.6%" : "25%" : isLandscape ? "25%" : "33%",
-                          }}
-                        >
-                          {renderItem({ item: child, index: childIndex })}
-                        </View>
-                      ))}
+                      {row.map((child, childIndex) => {
+                        const colorIndex = rowIndex * chunkSize + childIndex;
+
+                        return (
+                          <View
+                            key={childIndex}
+                            style={{
+                              width: isIpad
+                                ? isLandscape
+                                  ? "16.6%"
+                                  : "25%"
+                                : isLandscape
+                                  ? "25%"
+                                  : "33%",
+                            }}
+                          >
+                            {renderItem({ item: child, index: colorIndex })}
+                          </View>
+                        );
+                      })}
                     </View>
                   ))}
                 </View>
@@ -764,7 +886,7 @@ const MenuTab = ({
       ) : (
         <>
           <FlatList
-                            bounces={false}
+            bounces={false}
 
             key={
               isLandscape
@@ -775,22 +897,22 @@ const MenuTab = ({
             keyboardShouldPersistTaps="handled"
             renderItem={renderItem}
             numColumns={
-                isIpad ? isLandscape ? 4 : 3 :
+              isIpad ? isLandscape ? 4 : 3 :
                 isLandscape
                   ? isHorizontal
                     ? 2
                     : 4
                   : isHorizontal
-                  ? 1
-                  : list.length > 8
-                  ? 4
-                  : 2
-              }
-              columnWrapperStyle={
-                !isHorizontal ? styles.columnWrapper : undefined
-              }
-              contentContainerStyle={styles.listContent}
-              showsVerticalScrollIndicator={false}
+                    ? 1
+                    : list.length > 8
+                      ? 4
+                      : 2
+            }
+            columnWrapperStyle={
+              !isHorizontal ? styles.columnWrapper : undefined
+            }
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
           />
         </>
       )}

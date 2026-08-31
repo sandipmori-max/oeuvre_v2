@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   PermissionsAndroid,
   Platform,
@@ -415,6 +415,26 @@ useEffect(() => {
       }
     }
   };
+
+    useEffect(() => {
+    if (!isAuthenticated) return;
+    locationServiceIntervalRef.current = setInterval(() => {
+      if (attendanceDone) {
+        dispatch(updateAttendanceState(true));
+        checkLocationServiceOnly();
+      } else {
+        dispatch(updateAttendanceState(false));
+      }
+    }, 1000);
+
+    return () => {
+      // Cleanup on logout / unmount
+      if (locationServiceIntervalRef.current) {
+        clearInterval(locationServiceIntervalRef.current);
+        locationServiceIntervalRef.current = null;
+      }
+    };
+  }, [isAuthenticated, reLoading, attendanceDone]);
 
  // ------------------------- Focus -------------------------
   useEffect(() => {

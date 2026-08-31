@@ -33,9 +33,13 @@ export const handlePageActionThunk = createAsyncThunk<
     );
     return response;
   } catch (error: any) {
-     if(error?.message === 'Invalid Token'){
+      if(error?.message === 'Invalid Token'){
         return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
-      }else{
+      } else if(error?.message === 'Token Expire'){
+       return rejectWithValue(
+          "Your session has expired. Please log in again to continue."
+        );
+      } else{
         return rejectWithValue(error?.message || "Failed to perform page action");
       }
     // return rejectWithValue(error?.message || "Failed to perform page action");
@@ -55,9 +59,13 @@ export const handleDeleteActionThunk = createAsyncThunk<
     const response = await DevERPService.handleDeleteAction(id, page, remarks);
     return response;
   } catch (error: any) {
-     if(error?.message === 'Invalid Token'){
+      if(error?.message === 'Invalid Token'){
         return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
-      }else{
+      } else if(error?.message === 'Token Expire'){
+       return rejectWithValue(
+          "Your session has expired. Please log in again to continue."
+        );
+      } else{
         return rejectWithValue(error?.message || "Failed to perform page action");
       }
     // return rejectWithValue(error?.message || "Failed to perform page action");

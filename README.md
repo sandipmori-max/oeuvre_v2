@@ -1,4 +1,7 @@
 // DevERP
+////// Command PhaseScriptExecution failed with a nonzero exit code
+npx react-native codegen
+
 
 // Multiple build creation with different Name + icon + package name
 
@@ -8,6 +11,7 @@
 // ./gradlew generateCodegenArtifactsFromSchema 
 // cmd - gradlew assemble[BRAND_NAME]Release
 
+ ` va`
 // How to used - .env.clientA and .env.cientB ??
 
 // How to run - clientA and clientB app ??

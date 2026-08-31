@@ -42,7 +42,7 @@ const SignaturePad: React.FC = ({
   const isLandscape = width > height;
   const handleSignature = (signature: string) => {
     setSavedSignature(signature);
-    handleSignatureAttachment(`${item?.field}.jpeg; ${signature}`, item?.field);
+    handleSignatureAttachment(`${item?.field}.png; ${signature}`, item?.field);
     setCacheBuster(Date.now());
     setModalVisible(false);
     closePad();
@@ -53,6 +53,7 @@ const SignaturePad: React.FC = ({
     setSavedSignature(null);
   };
 
+  
   const handleSave = () => {
     signatureRef.current?.readSignature();
   };

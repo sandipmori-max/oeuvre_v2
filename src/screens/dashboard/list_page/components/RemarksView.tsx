@@ -17,7 +17,7 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const RemarksView = ({ remarks }) => {
+const RemarksView = ({ color, remarks }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const theme = useAppSelector((state) => state?.theme.mode);
   const { t } = useTranslations();
@@ -35,11 +35,13 @@ const RemarksView = ({ remarks }) => {
 
   return (
     <View
-      style={{
+      style={[{
         width: "100%", 
         backgroundColor: isDark ? "#000" : "#FFFFFF",
         marginVertical: 4
-      }}
+      }, color && {
+        backgroundColor : color
+      }]}
     >
        
 
@@ -51,7 +53,7 @@ const RemarksView = ({ remarks }) => {
           fontSize: 13,
           lineHeight: 18,
         }}
-        text={remarks.replace(" ", "").replace("\n", "")}
+        text={typeof remarks === 'string' ?  remarks?.replace(" ", "").replace("\n", "") : remarks}
       />
 
       {/* Expand Button */}

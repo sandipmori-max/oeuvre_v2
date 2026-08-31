@@ -168,7 +168,29 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
   const [locationEnabled, setLocationEnabled] = useState<boolean | null>(null);
   const [modalClose, setModalClose] = useState(false);
   const [isSettingVisible, setIsSettingVisible] = useState(false);
-  const [myScript, setMyScript] = useState();
+  const [myScript, setMyScript] = useState(
+    [
+    {
+        "logic": "AND",
+        "rules": [
+            {
+                "type": "formula",
+                "formulaType": "dateDiff",
+                "fieldName": "totalday",
+                "fromField": "leavedatefrom",
+                "toField": "leavedateto",
+                "inclusive": true,
+                "triggerFields": [
+                    "leavedatefrom",
+                    "leavedateto"
+                ]
+            }
+        ]
+    },
+]
+
+
+  );
   const [backgroundDeniedModal, setBackgroundDeniedModal] = useState(false);
   const isCheckingPermission = useRef(false);
   const locationSyncInterval = useRef(null);
@@ -754,7 +776,7 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
     }) => {
       const setValue = (val, source) => {
 
-       console.log("valvalvalvalvalvalvalvalvalvalval", val, source)
+        console.log("valvalvalvalvalvalvalvalvalvalval", val, source)
         if (myScript && source && source === "isFromDropdown") {
           const raw = myScript.find((obj) =>
             obj.rules?.some(
@@ -780,38 +802,38 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
           );
 
           console.log("isComponentHideVisibleisComponentHideVisibleisComponentHideVisible", isComponentHideVisible)
-          
+
           if (isComponentHideVisible) {
-  const updatedValues = {
-    ...formValues,
-    [item.field]: val,
-  };
+            const updatedValues = {
+              ...formValues,
+              [item.field]: val,
+            };
 
-  console.log("updatedValuesupdatedValuesupdatedValues", updatedValues)
+            console.log("updatedValuesupdatedValuesupdatedValues", updatedValues)
 
-  setFormValues(updatedValues);
+            setFormValues(updatedValues);
 
-  const result = runDynamicRules(
-    myScript,
-    updatedValues,
-    item.field
-  );
+            const result = runDynamicRules(
+              myScript,
+              updatedValues,
+              item.field
+            );
 
-  console.log("resultresultresult", result)
+            console.log("resultresultresult", result)
 
-  if (result.actions?.length) {
-    const updatedControls = applyActionsToControls(
-      controls,
-      result.actions
-    );
+            if (result.actions?.length) {
+              const updatedControls = applyActionsToControls(
+                controls,
+                result.actions
+              );
 
-    console.log("updatedControls", updatedControls)
+              console.log("updatedControls", updatedControls)
 
-    setControls(updatedControls);
-  }
+              setControls(updatedControls);
+            }
 
-  return;
-}
+            return;
+          }
           if (!isDayCalculation) {
             setFormValues((prev) => ({
               ...prev,
@@ -893,13 +915,13 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
           console.log("valvalvalvalvalvalvalvalvalvalval else ", val)
           setFormValues((prev) => {
             let updatedValues;
-             console.log("myScriptmyScriptmyScriptmyScript", myScript)
+            console.log("myScriptmyScriptmyScriptmyScript", myScript)
             if (typeof val === "object" && val !== null) {
               updatedValues = { ...prev, ...val };
             } else {
               updatedValues = { ...prev, [item.field]: val };
             }
-             console.log("myScriptmyScriptmyScriptmyScript2222", myScript)
+            console.log("myScriptmyScriptmyScriptmyScript2222", myScript)
             const parsed = safeParse(myScript);
             console.log("parsed", parsed)
             const safeRules = Array.isArray(parsed) ? parsed : [parsed];
@@ -930,7 +952,7 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
         }
 
       };
-             
+
 
       const value =
         formValues[item?.field] === "#location"
@@ -1507,7 +1529,7 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
                   <FlatList
                     showsVerticalScrollIndicator={false}
                     data={controls}
-                     bounces={false}
+                    bounces={false}
                     key={
                       isLandscape
                         ? `${isLandscape}-landscape`
@@ -1519,7 +1541,7 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
                     contentContainerStyle={{ paddingBottom: keyboardHeight }}
                     keyboardShouldPersistTaps="handled"
                     numColumns={isIpad ? (isLandscape ? 3 : 1) : (isLandscape ? 2 : 1)}
-                 
+
                   />{" "}
                 </>
               ) : (

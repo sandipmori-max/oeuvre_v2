@@ -28,10 +28,10 @@ export const styles = StyleSheet.create({
   card: {
     flex: 1,
     borderRadius: 6,
-    paddingVertical: 1,
-    paddingHorizontal: 2,
+    paddingHorizontal: Platform.OS === 'android' ? 6 : 8,
+    paddingVertical: Platform.OS === 'android' ? 6 : 8,
+
     marginBottom: Platform.OS === 'android' ? 8 : 12,
-    alignItems: "center",
     marginHorizontal: 6,
   },
   cardV2: {
@@ -40,23 +40,22 @@ export const styles = StyleSheet.create({
     paddingVertical: Platform.OS === 'android' ? 6 : 8,
     paddingHorizontal: Platform.OS === 'android' ? 6 : 8,
     marginBottom: Platform.OS === 'android' ? 6 : 8,
-    alignItems: "center",
     marginHorizontal: 4,
   },
   iconContainer: {
     marginTop: 6,
     width: 40,
     height: 40,
-    borderRadius: 36,
-    justifyContent: "center",
+    borderRadius: 6,
     alignItems: "center",
+    justifyContent: "center",
     borderWidth: 1,
     borderColor: "rgba(107, 104, 104, 0.3)",
   },
   iconContainerV2: {
     width: 36,
     height: 36,
-    borderRadius: 35,
+    borderRadius: 6,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
@@ -68,7 +67,7 @@ export const styles = StyleSheet.create({
     fontWeight: "700",
   },
   iconTextV2: {
-    opacity: 0.5,  
+    opacity: 0.5,
   },
   title: {
     fontSize: 16,

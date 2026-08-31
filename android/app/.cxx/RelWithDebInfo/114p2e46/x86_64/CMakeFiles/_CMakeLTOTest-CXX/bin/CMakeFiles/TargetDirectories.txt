@@ -1,4 +1,0 @@
-/Users/deverp/Desktop/Sandip_Mori/DevERP_Mobile_app_01/android/app/.cxx/RelWithDebInfo/114p2e46/x86_64/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/foo.dir
-/Users/deverp/Desktop/Sandip_Mori/DevERP_Mobile_app_01/android/app/.cxx/RelWithDebInfo/114p2e46/x86_64/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/boo.dir
-/Users/deverp/Desktop/Sandip_Mori/DevERP_Mobile_app_01/android/app/.cxx/RelWithDebInfo/114p2e46/x86_64/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/edit_cache.dir
-/Users/deverp/Desktop/Sandip_Mori/DevERP_Mobile_app_01/android/app/.cxx/RelWithDebInfo/114p2e46/x86_64/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/rebuild_cache.dir

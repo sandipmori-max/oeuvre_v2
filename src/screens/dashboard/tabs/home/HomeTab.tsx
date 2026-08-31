@@ -73,6 +73,7 @@ import { batch } from "react-redux";
 import DeviceInfo from "react-native-device-info";
 import { ERP_ICON } from "../../../../assets";
 import BirthdayList from "./BirthdayList";
+import LeaveBalanceSection from "./LeaveBalanceSection";
 const hasHtmlContent = (str: string) => {
   if (!str || typeof str !== "string") return false;
   return /<([a-z]+)([^>]*?)>/i.test(str);
@@ -2073,7 +2074,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
 
         </> : <FlatList
           data={[""]}
-                            bounces={false}
+          bounces={false}
 
           key={
             isLandscape
@@ -2320,7 +2321,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                   }}
                                 >
                                   <FlatList
-                                                    bounces={false}
+                                    bounces={false}
 
                                     key={
                                       isLandscape
@@ -2398,7 +2399,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                 }}
                               >
                                 <FlatList
-                                                  bounces={false}
+                                  bounces={false}
 
                                   key={
                                     isLandscape
@@ -2434,7 +2435,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                               ]}
                             >
                               <FlatList
-                                                bounces={false}
+                                bounces={false}
 
                                 key={
                                   isLandscape
@@ -2567,9 +2568,6 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                       <Text
                                         style={[
                                           styles.timeText,
-                                          {
-                                            color: ERP_COLOR_CODE.ERP_APP_COLOR,
-                                          },
                                         ]}
                                       >
                                         {attendance.intime || "-"}
@@ -2577,9 +2575,6 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                       <Text
                                         style={[
                                           styles.labelText,
-                                          {
-                                            color: ERP_COLOR_CODE.ERP_APP_COLOR,
-                                          },
                                         ]}
                                       >
                                         Check In
@@ -2631,9 +2626,6 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                       <Text
                                         style={[
                                           styles.labelText,
-                                          {
-                                            color: ERP_COLOR_CODE.ERP_green,
-                                          },
                                         ]}
                                       >
                                         Working Hrs
@@ -2683,9 +2675,6 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                       <Text
                                         style={[
                                           styles.labelText,
-                                          {
-                                            color: ERP_COLOR_CODE.ERP_ERROR,
-                                          },
                                         ]}
                                       >
                                         Check Out
@@ -2845,9 +2834,6 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                       <Text
                                         style={[
                                           styles.timeText,
-                                          {
-                                            color: ERP_COLOR_CODE.ERP_APP_COLOR,
-                                          },
                                         ]}
                                       >
                                         {present}
@@ -2855,9 +2841,6 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                       <Text
                                         style={[
                                           styles.labelText,
-                                          {
-                                            color: ERP_COLOR_CODE.ERP_APP_COLOR,
-                                          },
                                         ]}
                                       >
                                         Present
@@ -2895,12 +2878,6 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                       <Text
                                         style={[
                                           styles.timeText,
-                                          {
-                                            color:
-                                              theme === "dark"
-                                                ? "white"
-                                                : ERP_COLOR_CODE.ERP_ERROR,
-                                          },
                                         ]}
                                       >
                                         {leave}
@@ -2908,9 +2885,6 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                       <Text
                                         style={[
                                           styles.labelText,
-                                          {
-                                            color: ERP_COLOR_CODE.ERP_ERROR,
-                                          },
                                         ]}
                                       >
                                         Absents
@@ -2949,9 +2923,6 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                       <Text
                                         style={[
                                           styles.timeText,
-                                          {
-                                            color: ERP_COLOR_CODE.ERP_ERROR,
-                                          },
                                         ]}
                                       >
                                         {late}
@@ -2959,9 +2930,6 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                       <Text
                                         style={[
                                           styles.labelText,
-                                          {
-                                            color: ERP_COLOR_CODE.ERP_ERROR,
-                                          },
                                         ]}
                                       >
                                         Late
@@ -2998,9 +2966,6 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                       <Text
                                         style={[
                                           styles.timeText,
-                                          {
-                                            color: "#ff9800",
-                                          },
                                         ]}
                                       >
                                         {lessHours}
@@ -3008,15 +2973,21 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                       <Text
                                         style={[
                                           styles.labelText,
-                                          {
-                                            color: "#ff9800",
-                                          },
                                         ]}
                                       >
                                         Less-Hr
                                       </Text>
                                     </View>
                                   </View>
+                                </>
+                              )}
+
+                            {user?.company_code
+                              ?.toLowerCase()
+                              ?.includes("deverp") &&
+                              attendance?.intime && (
+                                <>
+                                  <LeaveBalanceSection />
                                 </>
                               )}
                           </View>
@@ -3077,7 +3048,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
         />
       }
 
-       
+
     </ScrollView>
   );
 };

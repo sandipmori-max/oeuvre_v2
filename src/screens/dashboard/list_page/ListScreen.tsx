@@ -62,12 +62,12 @@ import { getDDLThunk } from "../../../store/slices/dropdown/thunk";
 import TableView from "./components/TableView";
 import GroupFilterModal from "./components/GroupFilterModal";
 import SortingFilterModal from "./components/SortingFilterModal";
-import DeviceInfo from "react-native-device-info";
- import { useBaseLink } from "../../../hooks/useBaseLink";
+import DeviceInfo from "react-native-device-info"; 
 
 const ListScreen = () => {
   const route = useRoute<RouteProp<ListRouteParams, "List">>();
   const { item, parsedConfig } = route?.params;
+  let DateType = parsedConfig?.dateType || "Month";
   console.log("parsedConfig", parsedConfig);
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
@@ -120,7 +120,6 @@ const ListScreen = () => {
   const [sortingKey, setSortingKey] =
     useState("");
 
-
   const [bottomSheetType, setBottomSheetType] = useState('');
   const [showInfoModal, setShowInfoModal] = useState(false);
   const sheetProgress = useRef(
@@ -153,48 +152,9 @@ const ListScreen = () => {
     setConfirmation(false)
     setSelected(null)
     setTapLoader(false)
-
   };
 
-  const loginOptions = [
-    'Mobile Number',
-    'Aadhaar Number',
-    'ABHA Number',
-    'ABHA Address'
-  ];
-
-  const registerOptions = [
-    'Aadhaar Number',
-    // 'Driving Licence',
-  ];
-  const sheetAnim = useRef(new Animated.Value(400)).current;
-  const baseLink = useBaseLink();
-  const optionList = bottomSheetType === 'Login' ? loginOptions : registerOptions;
   const [selectedLoginType, setSelectedLoginType] = useState();
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gesture) =>
-        gesture.dy > 5,
-
-      onPanResponderMove: (_, gesture) => {
-        if (gesture.dy > 0) {
-          sheetAnim.setValue(gesture.dy);
-        }
-      },
-
-      onPanResponderRelease: (_, gesture) => {
-        if (gesture.dy > 120) {
-          closeSheet();
-        } else {
-          Animated.spring(sheetAnim, {
-            toValue: 0,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    }),
-  ).current;
-
 
   const availableKeys = Object.keys(
     filteredData?.[0] || {},
@@ -311,6 +271,7 @@ const ListScreen = () => {
       // dispatch(updateSelectedToDateState(""));
       // dispatch(updateSelectedBranchesState([]));
       setTapLoader(false);
+      setSelectedStatus("All")
 
       return () => { };
     }, [navigation]),
@@ -353,14 +314,15 @@ const ListScreen = () => {
             />
           )}
           {
-             <ERPIcon
+            <ERPIcon
               name={isTableView ? 'list' : 'apps'}
               onPress={() => {
                 onRefresh();
+                setSelectedStatus("All")
                 setIsTableView(!isTableView);
               }}
             />
-          } 
+          }
           {
             isTableView && <ERPIcon
               name={'G1'}
@@ -463,6 +425,7 @@ const ListScreen = () => {
 
   const fetchPageData = async () => {
     try {
+      setSelectedStatus("All")
       const parsed = await dispatch(
         getERPPageThunk({ page: "Dashboard", id: "" }),
       ).unwrap();
@@ -503,25 +466,32 @@ const ListScreen = () => {
     }
   };
 
-const statusOptions = useMemo(() => {
-  const uniqueStatus = [
-    ...new Set(
-      listData
-        .map(item => item?.status?.toString().trim())
-        .filter(status => !!status)
-    ),
-  ];
+  const statusOptions = useMemo(() => {
+    const uniqueStatus = [
+      ...new Set(
+        listData
+          .map(item => item?.status?.toString().trim())
+          .filter(status => !!status)
+      ),
+    ];
 
-  return uniqueStatus.length > 0
-    ? ["All", ...uniqueStatus]
-    : [];
-}, [listData]);
+    return uniqueStatus.length > 0
+      ? ["All", ...uniqueStatus]
+      : [];
+  }, [listData]);
 
   console.log("statusOptionsstatusOptionsstatusOptions", statusOptions)
 
   const handleStatusChange = (status) => {
+     setSearchQuery("")
+      setSortingKey("")
+      setPrimaryGroupKey("")
+      setSecondaryGroupKey("")
+      setSelectedStatus("All")
+      setSortConfig(null)
     setSelectedStatus(status);
     applyFilters(searchQuery, status);
+    
   };
 
 
@@ -560,11 +530,48 @@ const statusOptions = useMemo(() => {
     }
   }, [navigation, parsedConfig]);
 
+
+
+
   const getCurrentMonthRange = () => {
     const now = new Date();
 
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    let firstDay: Date;
     const lastDay = new Date();
+
+    switch (DateType.toLowerCase()) {
+      case "today":
+        firstDay = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+        break;
+
+      case "month":
+        firstDay = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          1
+        );
+        break;
+
+      case "year":
+        firstDay = new Date(
+          now.getFullYear(),
+          0,
+          1
+        );
+        break;
+
+      default:
+        firstDay = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          1
+        );
+        break;
+    }
 
     const from = formatDateForAPI(firstDay);
     const to = formatDateForAPI(lastDay);
@@ -638,22 +645,29 @@ const statusOptions = useMemo(() => {
       setSortingKey("")
       setPrimaryGroupKey("")
       setSecondaryGroupKey("")
+      setSelectedStatus("All")
+      setSortConfig(null)
       getCurrentMonthRange();
-    } catch (e) { }
+    } catch (e) {
+
+    }
   };
 
   const handleSearchChange = (text: string) => {
     setSelectedStatus('All')
     setSearchQuery(text);
-    debouncedSearch(text, listData); 
+    debouncedSearch(text, listData);
   };
 
   const clearSearch = () => {
     setSearchQuery("");
     setFilteredData(listData);
+
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
+     setSelectedStatus("All")
+
     if (event?.type === "dismissed" || !selectedDate) {
       setShowDatePicker(null);
       return;
@@ -742,7 +756,6 @@ const statusOptions = useMemo(() => {
       }
 
       setConfigData(configArray);
-      console.log("dataArray------12312313----------", dataArray)
       setListData(dataArray);
       setFilteredData(dataArray);
     } catch (e: any) {
@@ -789,6 +802,7 @@ const statusOptions = useMemo(() => {
 
       const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
 
+      console.log("parsed", parsed)
       let dataArray = [];
       let configArray = [];
 
@@ -835,11 +849,8 @@ const statusOptions = useMemo(() => {
   );
 
   const handleItemPressed = (item, page, pageTitle = "") => {
-    console.log(
-      "parsedConfig++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++",
-      parsedConfig,
-      pageName
-    );
+
+    setSelectedStatus('All')
     if (!parsedConfig) {
       return;
     }
@@ -901,20 +912,68 @@ const statusOptions = useMemo(() => {
   };
 
   const handleAbhaClicked = (item) => {
+    setSelectedStatus('All')
     navigation.navigate('Details', {
       item
     })
   }
 
-  const handleContinue = () => {
-    if (!selected) return;
-    if (selected === "yes") {
-      setBottomSheetType('Login')
-    } else {
-      setBottomSheetType('Register')
-    }
-    setConfirmation(true)
+
+  const renderStatusTab = (status: string) => {
+    const isSelected = selectedStatus === status;
+    const isEqualWidth = statusOptions.length <= 3;
+
+    return (
+      <TouchableOpacity
+        key={status}
+        activeOpacity={0.75}
+        onPress={() => handleStatusChange(status)}
+        style={{
+          flex: isEqualWidth ? 1 : undefined,
+          minWidth: isEqualWidth ? 0 : 110,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 6,
+          height: 36,
+          paddingVertical: 8,
+          backgroundColor: isSelected ? '#fff' : "#f7f7f7",
+          borderWidth: isSelected ? 1.5 : 0.8,
+          borderColor: isSelected
+            ? ERP_COLOR_CODE.ERP_APP_COLOR
+            : '#F8FAFC',
+          borderRadius: 4,
+          borderBottomWidth: isSelected ? 1 : 0.8,
+          borderBottomColor: isSelected
+            ? ERP_COLOR_CODE.ERP_APP_COLOR
+            : '#515253',
+
+        }}
+      >
+        <Text
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={{
+            fontSize: 14,
+
+            fontWeight: isSelected
+              ? '700'
+              : '500',
+
+            color: isSelected
+              ? ERP_COLOR_CODE.ERP_APP_COLOR
+              : '#475569',
+          }}
+        >
+          {status}
+        </Text>
+
+        {/* Count */}
+
+      </TouchableOpacity>
+    );
   };
+
 
   if (parsedError) {
     return (
@@ -1473,6 +1532,8 @@ const statusOptions = useMemo(() => {
                           dispatch(updateSelectedToDateState(formatted));
                         }
                         setShowDatePicker(null);
+                         setSelectedStatus("All")
+
                       }}
                     >
                       <MaterialIcons name='done' size={24} color={ERP_COLOR_CODE.ERP_green} />
@@ -1546,40 +1607,46 @@ const statusOptions = useMemo(() => {
           ) : (
             <>
               {/* <AppMapView /> */}
-              <View style={{ marginVertical: 8 , marginHorizontal: 12}}>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
+              {
+                statusOptions.length != 0 && <> 
+                 {statusOptions.length <= 3 ? (
+                <View
+                  style={{
+                    width: '100%',
+                    flexDirection: 'row',
+                    paddingHorizontal: 8,
+                    paddingTop: 8,
+                    gap: 10,
+                  }}
                 >
-                  {statusOptions.map(status => (
-                    <TouchableOpacity
-                      key={status}
-                      onPress={() => handleStatusChange(status)}
-                      style={{
-                        paddingHorizontal: 16, 
-                        paddingVertical: 8,
-                        marginRight: 8,
-                        borderRadius: 12,
-                        backgroundColor:
-                          selectedStatus === status
-                            ? ERP_COLOR_CODE.ERP_APP_COLOR
-                            : "#E5E7EB",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color:
-                            selectedStatus === status
-                              ? "#fff"
-                              : "#000",
-                        }}
-                      >
-                        {status}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
+                  {statusOptions.map(status =>
+                    renderStatusTab(status),
+                  )}
+                </View>
+              ) : (
+                <View style={{
+                  width: '100%',
+                  flexDirection: 'row',
+                  paddingHorizontal: 8,
+                  paddingTop: 8,
+                  gap: 10,
+                }}>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{
+                      gap: 10,
+                    }}
+                  >
+                    {statusOptions.map(status =>
+                      renderStatusTab(status),
+                    )}
+                  </ScrollView>
+                </View>
+              )}
+                </>
+              }
+             
               {
                 isTableView ? <>
                   <TableView
@@ -1603,26 +1670,28 @@ const statusOptions = useMemo(() => {
                     primaryGroupKey={primaryGroupKey}
                     secondaryGroupKey={secondaryGroupKey}
                   />
-                </> : <ReadableView
-                  handleDeleteNotification={handleDeleteNotification}
-                  isFromAlertCard={isFromAlertCard}
-                  configData={configData}
-                  filteredData={filteredData}
-                  loadingListId={loadingListId}
-                  totalAmount={totalAmount}
-                  totalQty={totalQty}
-                  isFromBusinessCard={isFromBusinessCard}
-                  pageParamsName={pageParamsName}
-                  handleItemPressed={handleItemPressed}
-                  parsedConfig={parsedConfig}
-                  pageName={pageName}
-                  setIsFilterVisible={setIsFilterVisible}
-                  setSearchQuery={setSearchQuery}
-                  handleActionButtonPressed={handleActionButtonPressed}
-                  isLoadingMore={isLoadingMore}
-                  loadMore={loadMore}
-                  handleAbhaClicked={handleAbhaClicked}
-                />
+                </> :
+
+                  <ReadableView
+                    handleDeleteNotification={handleDeleteNotification}
+                    isFromAlertCard={isFromAlertCard}
+                    configData={configData}
+                    filteredData={filteredData}
+                    loadingListId={loadingListId}
+                    totalAmount={totalAmount}
+                    totalQty={totalQty}
+                    isFromBusinessCard={isFromBusinessCard}
+                    pageParamsName={pageParamsName}
+                    handleItemPressed={handleItemPressed}
+                    parsedConfig={parsedConfig}
+                    pageName={pageName}
+                    setIsFilterVisible={setIsFilterVisible}
+                    setSearchQuery={setSearchQuery}
+                    handleActionButtonPressed={handleActionButtonPressed}
+                    isLoadingMore={isLoadingMore}
+                    loadMore={loadMore}
+                    handleAbhaClicked={handleAbhaClicked}
+                  />
               }
 
             </>
@@ -1679,261 +1748,8 @@ const statusOptions = useMemo(() => {
             </TouchableOpacity>
           </Animated.View>
         )}
+ 
 
-      {showLoginSheet && (
-        <Modal
-          transparent
-          visible={showLoginSheet}
-          animationType="none"
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            style={styles.backdrop}
-            onPress={closeSheet}
-          />
-
-          <Animated.View
-            {...panResponder.panHandlers}
-            style={[
-              styles.bottomSheet,
-              {
-                transform: [
-                  {
-                    translateY: sheetTranslateY,
-                  },
-                ],
-              },
-              confirmation && bottomSheetType !== 'Login' && {
-                height: '46%'
-              },
-              confirmation && bottomSheetType === 'Login' && {
-                height: '64%'
-              }
-            ]}
-          >
-
-            <View style={styles.logo}>
-              <Image
-                source={{
-                  uri: `${baseLink}fileupload/1/InvoiceByConfig/1/logo.jpg`,
-                }}
-                style={{
-                  top: 5,
-                  height: 60, width: 80, alignSelf: 'center'
-                }}
-                resizeMode="contain"
-              />
-            </View>
-
-            {
-              confirmation ? <>
-                <View style={{ height: 14 }} />
-                <Text style={styles.sheetTitle}>
-                  {bottomSheetType === 'Login' ? 'Login To Your ABHA' : 'Create ABHA number using'}
-                </Text>
-
-                <Text style={{
-                  color: 'gray',
-                  marginBottom: 12
-                }}>
-                  {
-                    bottomSheetType === 'Login' ? 'Select a login method to access your ABHA account.' : 'Please choose one of the below option to start with the creation of your ABHA'
-                  }
-                </Text>
-
-                {optionList.map(item => {
-                  const selected =
-                    selectedLoginType === item;
-
-                  return (
-                    <TouchableOpacity
-                      key={item}
-                      style={[
-                        styles.optionRow,
-                        selected &&
-                        {
-                          borderColor: ERP_COLOR_CODE.ERP_APP_COLOR,
-                          backgroundColor: "#f6f1ed",
-                        },
-                      ]}
-                      onPress={() => {
-                        setSelectedLoginType(item)
-
-                      }}
-                    >
-                      <View
-                        style={[
-                          styles.radioOuter,
-                          selected &&
-                          {
-                            borderColor: ERP_COLOR_CODE.ERP_APP_COLOR
-                          },
-                        ]}
-                      >
-                        {selected && (
-                          <View
-                            style={styles.radioInner}
-                          />
-                        )}
-                      </View>
-
-                      <Text
-                        style={styles.optionText}
-                      >
-                        {item}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-
-                <TouchableOpacity
-                  disabled={!selectedLoginType}
-                  style={[
-                    styles.button,
-                    {
-                      backgroundColor: ERP_COLOR_CODE.ERP_APP_COLOR
-                    },
-                    !selectedLoginType && styles.disabledButton,
-                  ]}
-                  onPress={() => {
-                    if (selectedLoginType === 'Driving Licence') {
-                      setShowLoginSheet(false)
-                      setShowInfoModal(true)
-                      return;
-                    }
-                    setTimeout(() => {
-                      setShowLoginSheet(false)
-                      navigation.navigate("RegistrationAbha", {
-                        loginType: selectedLoginType,
-                        isFromRegister: bottomSheetType === 'Login' ? false : true
-                      })
-                    })
-                    setShowLoginSheet(false);
-                    setConfirmation(false)
-                    setSelected(null)
-                  }}
-                >
-                  <Text style={styles.buttonText}>
-                    Continue
-                  </Text>
-                </TouchableOpacity>
-              </> : <>
-                <Text style={styles.title}>
-                  Do you already have ABHA?
-                </Text>
-
-                <Text style={styles.subtitle}>
-                  Select one option to continue patient registration
-                </Text>
-
-
-                <View style={styles.flowContainer}>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.option,
-                      selected === "yes" && {
-                        borderColor: ERP_COLOR_CODE.ERP_APP_COLOR,
-                        backgroundColor: "#f6f1ed",
-                      },
-                    ]}
-                    onPress={() => setSelected("yes")}
-                  >
-
-                    <View
-                      style={[
-                        styles.radioOuter,
-                        selected === "yes" &&
-                        {
-                          borderColor: ERP_COLOR_CODE.ERP_APP_COLOR
-                        },
-                      ]}
-                    >
-                      {selected === "yes" && (
-                        <View
-                          style={styles.radioInner}
-                        />
-                      )}
-                    </View>
-
-                    <View style={{ marginLeft: 12 }}>
-                      <Text style={styles.optionTitle}>
-                        Yes, I have ABHA
-                      </Text>
-
-                      <Text style={styles.optionDesc}>
-                        Verify existing ABHA and fetch profile
-                      </Text>
-                    </View>
-
-                  </TouchableOpacity>
-
-
-                  {/* Connector */}
-                  <View style={styles.connector} />
-
-
-                  <TouchableOpacity
-                    style={[
-                      styles.option,
-                      selected === "no" && {
-                        borderColor: ERP_COLOR_CODE.ERP_APP_COLOR,
-                        backgroundColor: "#f6f1ed",
-                      }, ,
-                    ]}
-                    onPress={() => setSelected("no")}
-                  >
-                    <View
-                      style={[
-                        styles.radioOuter,
-                        selected === "no" &&
-                        {
-                          borderColor: ERP_COLOR_CODE.ERP_APP_COLOR,
-                        }, ,
-                      ]}
-                    >
-                      {selected === "no" && (
-                        <View
-                          style={styles.radioInner}
-                        />
-                      )}
-                    </View>
-
-                    <View style={{ marginLeft: 12 }}>
-                      <Text style={styles.optionTitle}>
-                        No, Create ABHA
-                      </Text>
-
-                      <Text style={styles.optionDesc}>
-                        Create new ABHA using Aadhaar OTP
-                      </Text>
-                    </View>
-
-                  </TouchableOpacity>
-
-                </View>
-
-
-                <TouchableOpacity
-                  disabled={!selected}
-                  style={[
-                    styles.button,
-                    {
-                      backgroundColor: ERP_COLOR_CODE.ERP_APP_COLOR,
-                    },
-                    !selected && styles.disabledButton,
-                  ]}
-                  onPress={handleContinue}
-                >
-                  <Text style={styles.buttonText}>
-                    Continue
-                  </Text>
-                </TouchableOpacity>
-              </>
-            }
-          </Animated.View>
-        </Modal>
-      )}
       {
         alertVisible && <CustomAlert
           visible={alertVisible}
@@ -1998,6 +1814,7 @@ const statusOptions = useMemo(() => {
             setGroupModalVisible1(false)
           }
           data={filteredData}
+          configData={configData}
           selectedKey={primaryGroupKey}
           onSelectKey={(key: string) => {
             setPrimaryGroupKey(key);
@@ -2012,6 +1829,8 @@ const statusOptions = useMemo(() => {
             setGroupModalVisible2(false)
           }
           data={filteredData}
+          configData={configData}
+
           selectedKey={secondaryGroupKey}
           onSelectKey={(key: string) => {
             setSecondaryGroupKey(key);
@@ -2028,6 +1847,7 @@ const statusOptions = useMemo(() => {
           title="Sort By"
           data={availableKeys}
           selectedValue={sortingKey}
+          configData={configData}
           onSelect={(key: string) => {
             setSortingKey(key);
             handleSort(key);

@@ -17,9 +17,14 @@ export const markAttendanceThunk = createAsyncThunk<
       );
       return response;
     } catch (error: any) {
+      
       if(error?.message === 'Invalid Token'){
         return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
-      }else{
+      } else if(error?.message === 'Token Expire'){
+       return rejectWithValue(
+          "Your session has expired. Please log in again to continue."
+        );
+      } else{
         return rejectWithValue(error?.message || "Failed to mark attendacne");
       }
       // return rejectWithValue(error?.message || "Failed to mark attendance");
@@ -36,9 +41,13 @@ export const getLastPunchInThunk = createAsyncThunk<
     const response = await DevERPService.getLastPunchIn();
     return response;
   } catch (error: any) {
-     if(error?.message === 'Invalid Token'){
+      if(error?.message === 'Invalid Token'){
         return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
-      }else{
+      } else if(error?.message === 'Token Expire'){
+       return rejectWithValue(
+          "Your session has expired. Please log in again to continue."
+        );
+      } else{
         return rejectWithValue(error?.message || "Failed to fetch last punch-in");
       }
     // return rejectWithValue(error?.message || "Failed to fetch last punch-in");
@@ -58,8 +67,12 @@ export const getLastPunchInList = createAsyncThunk<
     } catch (error: any) {
        if(error?.message === 'Invalid Token'){
         return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
-      }else{
-        return rejectWithValue(error?.message || "Failed to fetch last punh-in");
+      } else if(error?.message === 'Token Expire'){
+       return rejectWithValue(
+          "Your session has expired. Please log in again to continue."
+        );
+      } else{
+        return rejectWithValue(error?.message || "Failed to fetch last punch-in");
       }
       // return rejectWithValue(error?.message || "Failed to fetch last punch-in");
     }

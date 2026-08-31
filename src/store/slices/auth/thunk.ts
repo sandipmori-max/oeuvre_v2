@@ -350,9 +350,13 @@ export const getERPAppConfigMenuThunk = createAsyncThunk(
       return rejectWithValue('Invalid menu response format');
     } catch (error: any) {
       console.log("response---error---------------=======================", error)
-      if (error?.message === 'Invalid Token') {
+      if(error?.message === 'Invalid Token'){
         return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
-      } else {
+      } else if(error?.message === 'Token Expire'){
+       return rejectWithValue(
+          "Your session has expired. Please log in again to continue."
+        );
+      } else{
         return rejectWithValue(error?.message || "Failed to get ERP menu");
       }
       // return rejectWithValue(error?.message || 'Failed to get ERP menu');
@@ -379,10 +383,14 @@ export const getERPDashboardThunk = createAsyncThunk(
       return dashboard;
     } catch (error: any) {
       console.log("dashboard-----------error----------", error);
-      if (error?.message === 'Invalid Token') {
+      if(error?.message === 'Invalid Token'){
         return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
-      } else {
-        return rejectWithValue(error?.message || "Failed to get ERP Dashboard");
+      } else if(error?.message === 'Token Expire'){
+       return rejectWithValue(
+          "Your session has expired. Please log in again to continue."
+        );
+      } else{
+        return rejectWithValue(error?.message || "Failed to get ERP dashboard");
       }
       // return rejectWithValue(error?.message || "Failed to get ERP dashboard");
     }
@@ -398,11 +406,15 @@ export const getERPPageThunk = createAsyncThunk<
     const pageData = await DevERPService.getPage(page, id);
     return pageData;
   } catch (error: any) {
-    if (error?.message === 'Invalid Token') {
-      return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
-    } else {
-      return rejectWithValue(error?.message || "Failed to get ERP page data");
-    }
+    if(error?.message === 'Invalid Token'){
+        return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
+      } else if(error?.message === 'Token Expire'){
+       return rejectWithValue(
+          "Your session has expired. Please log in again to continue."
+        );
+      } else{
+        return rejectWithValue(error?.message || "Failed to get ERP page data");
+      }
     // return rejectWithValue(error || "Failed to get ERP page data");
   }
 });
@@ -430,10 +442,14 @@ export const getERPListDataThunk = createAsyncThunk(
       );
       return listData;
     } catch (error: any) {
-      if (error?.message === 'Invalid Token') {
+      if(error?.message === 'Invalid Token'){
         return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
-      } else {
-        return rejectWithValue(error?.message || "Failed to get ERP List data");
+      } else if(error?.message === 'Token Expire'){
+       return rejectWithValue(
+          "Your session has expired. Please log in again to continue."
+        );
+      } else{
+        return rejectWithValue(error?.message || "Failed to get ERP list data");
       }
       // return rejectWithValue(error?.message || "Failed to get ERP list data");
     }
@@ -457,9 +473,13 @@ export const getERPConfigDataThunk = createAsyncThunk(
       return listData;
     } catch (error: any) {
       console.log("error =================", error)
-      if (error?.message === 'Invalid Token') {
+      if(error?.message === 'Invalid Token'){
         return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
-      } else {
+      } else if(error?.message === 'Token Expire'){
+       return rejectWithValue(
+          "Your session has expired. Please log in again to continue."
+        );
+      } else{
         return rejectWithValue(error?.message || "Failed to get ERP list data");
       }
       // return rejectWithValue(error?.message || "Failed to get ERP list data");
