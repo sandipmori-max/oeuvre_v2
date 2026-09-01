@@ -556,11 +556,11 @@
   "variable": [
     {
       "key": "supportBaseUrl",
-      "value": "https://support.deverp.net/devws"
+      "value": "https://support.oeuvre.net/devws"
     },
     {
       "key": "baseUrl",
-      "value": "https://payroll.deverp.net/devws/msp_api.aspx"
+      "value": "https://payroll.oeuvre.net/devws/msp_api.aspx"
     },
     {
       "key": "username",

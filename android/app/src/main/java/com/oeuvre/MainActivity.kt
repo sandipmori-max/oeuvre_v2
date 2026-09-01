@@ -1,4 +1,4 @@
-package com.deverp
+package com.oeuvre
 
 import android.content.res.Configuration
 import android.os.Bundle
@@ -13,7 +13,7 @@ class MainActivity : ReactActivity() {
     super.onCreate(null)
   }
 
-  override fun getMainComponentName(): String = "DevERP"
+  override fun getMainComponentName(): String = "Oeuvre"
 
   override fun createReactActivityDelegate(): ReactActivityDelegate =
     DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)

@@ -1,12 +1,12 @@
-package com.deverp.location
+package com.oeuvre.location
 
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.facebook.react.bridge.*
 import android.util.Log
-import com.deverp.location.LocationService
+import com.oeuvre.location.LocationService
 import com.facebook.react.bridge.ReadableArray
-import com.deverp.location.UserData
+import com.oeuvre.location.UserData
 import java.lang.Exception
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority

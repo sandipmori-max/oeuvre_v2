@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "DevERP.app"
-               BlueprintName = "DevERP"
-               ReferencedContainer = "container:DevERP.xcodeproj">
+               BuildableName = "Oeuvre.app"
+               BlueprintName = "Oeuvre"
+               ReferencedContainer = "container:Oeuvre.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "DevERPTests.xctest"
-               BlueprintName = "DevERPTests"
-               ReferencedContainer = "container:DevERP.xcodeproj">
+               BuildableName = "OeuvreTests.xctest"
+               BlueprintName = "OeuvreTests"
+               ReferencedContainer = "container:Oeuvre.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "DevERP.app"
-            BlueprintName = "DevERP"
-            ReferencedContainer = "container:DevERP.xcodeproj">
+            BuildableName = "Oeuvre.app"
+            BlueprintName = "Oeuvre"
+            ReferencedContainer = "container:Oeuvre.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "DevERP.app"
-            BlueprintName = "DevERP"
-            ReferencedContainer = "container:DevERP.xcodeproj">
+            BuildableName = "Oeuvre.app"
+            BlueprintName = "Oeuvre"
+            ReferencedContainer = "container:Oeuvre.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

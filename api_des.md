@@ -8,7 +8,7 @@ Retrieve the target app link from the central service.
 
 Endpoint:
 
-POST https://support.deverp.net/devws/appcode.aspx/getLink
+POST https://support.oeuvre.net/devws/appcode.aspx/getLink
 
 
 Headers:
@@ -25,7 +25,7 @@ Response Example:
 
 {
   "status": "success",
-  "link": "https://payroll.deverp.net"
+  "link": "https://payroll.oeuvre.net"
 }
 
 👤 Step 2. Set App ID
@@ -34,7 +34,7 @@ Authenticate the user and register the device.
 
 Endpoint:
 
-POST https://payroll.deverp.net/devws/msp_api.aspx/setAppID
+POST https://payroll.oeuvre.net/devws/msp_api.aspx/setAppID
 
 
 Headers:
@@ -67,7 +67,7 @@ Obtain a session token for further API access.
 
 Endpoint:
 
-POST https://payroll.deverp.net/devws/msp_api.aspx/getAuth
+POST https://payroll.oeuvre.net/devws/msp_api.aspx/getAuth
 
 
 Headers:
@@ -95,7 +95,7 @@ Retrieve available menus for the user.
 
 Endpoint:
 
-POST https://payroll.deverp.net/devws/msp_api.aspx/getMenu
+POST https://payroll.oeuvre.net/devws/msp_api.aspx/getMenu
 
 
 Request Body:
@@ -110,7 +110,7 @@ Fetch DB-related details for user.
 
 Endpoint:
 
-POST https://payroll.deverp.net/devws/msp_api.aspx/getDB
+POST https://payroll.oeuvre.net/devws/msp_api.aspx/getDB
 
 
 Request Body:
@@ -125,7 +125,7 @@ Get metadata/schema for a specific page/module.
 
 Endpoint:
 
-POST https://payroll.deverp.net/devws/msp_api.aspx/getPage
+POST https://payroll.oeuvre.net/devws/msp_api.aspx/getPage
 
 
 Request Body:
@@ -141,7 +141,7 @@ Fetch list records between date ranges.
 
 Endpoint:
 
-POST https://payroll.deverp.net/devws/msp_api.aspx/getListData
+POST https://payroll.oeuvre.net/devws/msp_api.aspx/getListData
 
 
 Request Body:
@@ -159,7 +159,7 @@ Record employee punch-in.
 
 Endpoint:
 
-POST https://payroll.deverp.net/devws/msp_api.aspx/punhin
+POST https://payroll.oeuvre.net/devws/msp_api.aspx/punhin
 
 
 Request Body:
@@ -176,7 +176,7 @@ Record employee punch-out.
 
 Endpoint:
 
-POST https://payroll.deverp.net/devws/msp_api.aspx/punhout
+POST https://payroll.oeuvre.net/devws/msp_api.aspx/punhout
 
 
 Request Body:
@@ -193,7 +193,7 @@ Fetch dropdown values for forms.
 
 Endpoint:
 
-POST https://payroll.deverp.net/devws/msp_api.aspx/getDDL
+POST https://payroll.oeuvre.net/devws/msp_api.aspx/getDDL
 
 
 Request Body:
@@ -210,7 +210,7 @@ Fetch dynamic lookup/search data.
 
 Endpoint:
 
-POST https://payroll.deverp.net/devws/msp_api.aspx/getAjax
+POST https://payroll.oeuvre.net/devws/msp_api.aspx/getAjax
 
 
 Request Body:
@@ -228,7 +228,7 @@ Save or update employee data.
 
 Endpoint:
 
-POST https://payroll.deverp.net/devws/msp_api.aspx/savePage
+POST https://payroll.oeuvre.net/devws/msp_api.aspx/savePage
 
 
 Request Body:
@@ -245,7 +245,7 @@ Delete a record from a page.
 
 Endpoint:
 
-POST https://payroll.deverp.net/devws/msp_api.aspx/pageDelete
+POST https://payroll.oeuvre.net/devws/msp_api.aspx/pageDelete
 
 
 Request Body:

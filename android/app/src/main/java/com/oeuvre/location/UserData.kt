@@ -1,4 +1,4 @@
-package com.deverp.location
+package com.oeuvre.location
 
 data class UserData(
     val token: String,

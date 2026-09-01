@@ -1,15 +1,15 @@
 {
   "project_info": {
     "project_number": "944238529141",
-    "project_id": "deverp-main",
-    "storage_bucket": "deverp-main.firebasestorage.app"
+    "project_id": "oeuvre-main",
+    "storage_bucket": "oeuvre-main.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
         "mobilesdk_app_id": "1:944238529141:android:12a6f618e39c784910463c",
         "android_client_info": {
-          "package_name": "com.deverp"
+          "package_name": "com.oeuvre"
         }
       },
       "oauth_client": [],
