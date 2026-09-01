@@ -20,6 +20,9 @@ import { ERP_COLOR_CODE } from "../../../../utils/constants";
 import { useBaseLink } from "../../../../hooks/useBaseLink";
 import { useAppSelector } from "../../../../store/hooks";
 import useTranslations from "../../../../hooks/useTranslations";
+import RNPhotoManipulator from "react-native-photo-manipulator";
+import { ERP_GIF } from "../../../../assets";
+import RNFS from "react-native-fs";
 
 const SignaturePad: React.FC = ({
   isValidate,
@@ -40,12 +43,47 @@ const SignaturePad: React.FC = ({
   const { t } = useTranslations();
   const { height, width } = useWindowDimensions();
   const isLandscape = width > height;
-  const handleSignature = (signature: string) => {
-    setSavedSignature(signature);
-    handleSignatureAttachment(`${item?.field}.png; ${signature}`, item?.field);
-    setCacheBuster(Date.now());
-    setModalVisible(false);
-    closePad();
+  const handleSignature = async (signature: string) => {
+
+
+    try {
+      const redBackground = ERP_GIF.BACK_IMG1;
+      const result = await RNPhotoManipulator.overlayImage(
+        redBackground,
+        signature,
+        { x: -10, y: 0 }
+      ); 
+
+      
+      const base64 = await RNFS.readFile(result, "base64");
+
+      const finalBase64 = `data:image/png;base64,${base64}`;
+
+      console.log(
+        "FINAL BASE64:",
+        finalBase64
+      );
+
+      setSavedSignature(finalBase64);
+
+      handleSignatureAttachment(
+        `${item?.field}.png; ${finalBase64}`,
+        item?.field
+      );
+
+      setCacheBuster(Date.now());
+      setModalVisible(false);
+      closePad();
+
+    } catch (error) {
+      console.log("SIGNATURE ERROR:", error);
+    }
+
+    // setSavedSignature(signature);
+    // handleSignatureAttachment(`${item?.field}.png; ${signature}`, item?.field);
+    // setCacheBuster(Date.now());
+    // setModalVisible(false);
+    // closePad();
   };
 
   const handleClear = () => {
@@ -53,7 +91,7 @@ const SignaturePad: React.FC = ({
     setSavedSignature(null);
   };
 
-  
+
   const handleSave = () => {
     signatureRef.current?.readSignature();
   };
@@ -64,15 +102,15 @@ const SignaturePad: React.FC = ({
     return `${base}?cb=${cacheBuster}`;
   };
 
-const openPad = () => {
-  setShowPad(false);
+  const openPad = () => {
+    setShowPad(false);
 
-  setTimeout(() => {
-    setSignatureKey(prev => prev + 1); // <-- important
-    setShowPad(true);
-    setModalVisible(true);
-  }, 50);
-};
+    setTimeout(() => {
+      setSignatureKey(prev => prev + 1); // <-- important
+      setShowPad(true);
+      setModalVisible(true);
+    }, 50);
+  };
 
   const closePad = () => {
     signatureRef.current?.clearSignature();
@@ -112,7 +150,7 @@ const openPad = () => {
         }}
       >
         <View></View>
-        <View style={{ height: 100, width: 100,  }}>
+        <View style={{ height: 100, width: 100, }}>
           <Image
             source={{ uri: getImageUri() }}
             style={styles.imageThumb}
@@ -196,7 +234,7 @@ const openPad = () => {
 
                 <TouchableOpacity
                   style={[styles.button, styles.closeButton]}
-                  onPress={() => {closePad()}}
+                  onPress={() => { closePad() }}
                 >
                   <MaterialIcons
                     name="close"
@@ -224,7 +262,8 @@ const openPad = () => {
                   clearText={t("text.text41")}
                   confirmText={t("text.text42")}
                   backgroundColor="#FFFFFF"
-                  penColor="#000000" 
+                  penColor={ERP_COLOR_CODE.ERP_APP_COLOR}
+
                 />
               </View> : <>
                 <Text>Loading....</Text>

@@ -1,5 +1,6 @@
 const ERP_BASE_URL_ICONS = './icons';
 const ERP_BASE_URL_GIF = './gif';
+const ABHA_BASE_URL_ICONS = './icons';
 
 const APP_LOGO = require(`${ERP_BASE_URL_ICONS}/logo.png`);
 
@@ -17,6 +18,8 @@ const NO_INTERNET = require(`${ERP_BASE_URL_GIF}/not_internet.png`);
 const NO_DATA = require(`${ERP_BASE_URL_GIF}/no_data.png`);
 const SUCCESS = require(`${ERP_BASE_URL_GIF}/success.gif`);
 const BACK_IMG = require(`${ERP_BASE_URL_GIF}/back5.jpg`);
+const BACK_IMG1 = require(`${ERP_BASE_URL_GIF}/back6.png`);
+
 
 const Analytics = require(`${ERP_BASE_URL_GIF}/Analytics.gif`);
 const Dashboards = require(`${ERP_BASE_URL_GIF}/Dashboards.gif`);
@@ -24,6 +27,9 @@ const DataManagement = require(`${ERP_BASE_URL_GIF}/DataManagement.gif`);
 const money = require(`${ERP_BASE_URL_GIF}/money.gif`);
 const RemoteMonitoring = require(`${ERP_BASE_URL_GIF}/RemoteMonitoring.gif`);
 const DEV_APP_LOGO = require(`${ERP_BASE_URL_ICONS}/dev_logo.png`);
+ 
+ 
+
 
 export const ERP_ICON = {
   APP_LOGO,
@@ -33,7 +39,7 @@ export const ERP_ICON = {
   ALERT,
   EXITS,
   PROFILE1,
-  VALIDATON
+  VALIDATON, 
  };
 
 export const ERP_GIF = {
@@ -47,6 +53,11 @@ export const ERP_GIF = {
   DataManagement,
   RemoteMonitoring,
   BACK_IMG,
-  LOCATION
+  LOCATION,
+  BACK_IMG1
+
 };
 
+export const ABHA_ICON = {
+   NO_DATA,
+ };

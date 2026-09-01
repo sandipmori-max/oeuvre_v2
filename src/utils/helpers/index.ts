@@ -9,7 +9,6 @@ import {
   Platform,
 } from "react-native";
 import RNFS from "react-native-fs";
-import FastImage from "react-native-fast-image";
 import { ERP_COLOR_CODE } from "../constants";
 import messaging from "@react-native-firebase/messaging";
 import Share from 'react-native-share';

@@ -68,7 +68,7 @@ const TabIcon: React.FC<TabIconProps & { focused: boolean }> = ({
         <>
           {name?.includes("fa fa-") ? (
             <FontAwesome
-              name={name.replace("fa fa-", "")}
+              name={typeof name === 'string' ? name.replace("fa fa-", "") :  name}
               size={size}
               color={color}
             />

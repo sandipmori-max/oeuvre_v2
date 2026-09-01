@@ -86,7 +86,7 @@ const TaskDetailsBottomSheet = ({
               </View>
             )}
             <View style={[styles.badge, { backgroundColor: statusColors[task.status] }]}>
-              <Text style={styles.badgeText}>{task.status.replace('_', ' ')}</Text>
+              <Text style={styles.badgeText}>{task?.status.replace('_', ' ')}</Text>
             </View>
           </View>
 

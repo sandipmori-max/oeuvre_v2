@@ -82,10 +82,12 @@ export const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     marginBottom: 4,
+      marginTop: 4,
     color: "rgba(75, 73, 73, 0.85)",
   },
   subtitleV2: {
     fontSize: 12,
     color: "rgba(75, 73, 73, 0.85)",
+    marginTop: 4
   },
 });

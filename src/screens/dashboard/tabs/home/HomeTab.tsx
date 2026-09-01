@@ -451,7 +451,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                         <ERPIcon name="search" onPress={() => setShowSearch(true)} />
                       )}
 
-                      {attendanceDone && user?.id == (user?.company_code?.toLowerCase()?.includes("oeuvre01") ? "16" : "113") && (
+                      {attendanceDone && user?.id == (user?.company_code?.toLowerCase()?.includes("gayatrirubtech") ? '1' : user?.company_code?.toLowerCase()?.includes("oeuvre01") ? "16" : "113") && (
                         <ERPIcon
                           color={"green"}
                           name={"location-on"}
@@ -725,7 +725,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                     },
                   ]}
                 >
-                  {item.icon?.includes("fa fa-") ? (
+                  {typeof item.icon === 'string' && item.icon?.includes("fa fa-") ? (
                     <FontAwesome
                       name={item.icon.replace("fa fa-", "")}
                       color={theme === "dark" ? "white" : "gray"}
@@ -2986,10 +2986,9 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                               ?.toLowerCase()
                               ?.includes("deverp") &&
                               attendance?.intime && (
-                                <>
-                                  <LeaveBalanceSection />
-                                </>
-                              )}
+                                <LeaveBalanceSection />
+                            )}
+
                           </View>
                         )}
                       />
@@ -3047,8 +3046,6 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
           onClose={() => setVisibleAI(false)}
         />
       }
-
-
     </ScrollView>
   );
 };

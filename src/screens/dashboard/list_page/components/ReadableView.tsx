@@ -28,7 +28,6 @@ import MemoizedFooterView from "./MemoizedFooterView";
 import DeviceInfo from "react-native-device-info";
 import Share from 'react-native-share';
 import RNFS from "react-native-fs";
-import AbhaUserItem from "../../../../abha/screens/Profile/AbhaUserItem";
 
 if (
   Platform.OS === "android" &&
@@ -189,6 +188,7 @@ const ReadableView = ({
     const remarks = item?.remarks;
     
     const address = item?.address;
+    console.log("address", address)
     const amount = item?.amount;
     const btnKeys = Object.keys(item).filter((key) => key.startsWith("btn_"));
     const baseUrl = Platform.OS === "android"
@@ -529,7 +529,7 @@ const ReadableView = ({
                         color: theme === "dark" ? "white" : "black",
                       }}
                     >
-                      {address.replace(/\\n/g, "\n")}
+                      {typeof address === 'string' ?  address?.replace(/\\n/g, "\n") :  address}
                     </Text>
                   </View>
                 )}
@@ -726,15 +726,8 @@ const ReadableView = ({
         keyboardShouldPersistTaps="handled"
         renderItem={({ item, index }) => (<>
 
-          {
-            parsedConfig?.title.includes('ABHA') ? <AbhaUserItem
-              item={item}
-              onPress={(item) => {
-                handleAbhaClicked(item)
-                
-              }}
-            /> : <RenderCard item={item} index={index} />
-          }
+          <RenderCard item={item} index={index} />
+          
         </>
 
           // 

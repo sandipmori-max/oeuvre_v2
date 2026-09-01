@@ -702,7 +702,7 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
         return merged;
       });
     } catch (e: any) {
-      setError(JSON.stringify(e?.data) || "Failed to load page");
+      setError(JSON.stringify(e) || JSON.stringify(e?.data) || "Failed to load page");
     } finally {
       setLoadingPageId(null);
       setTimeout(() => {

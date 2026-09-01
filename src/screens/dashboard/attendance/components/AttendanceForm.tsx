@@ -565,8 +565,8 @@ const AttendanceForm = ({ setBlockAction, resData, isFromDashboard }: any) => {
                           .map((u) => {
                             if (user?.id.toString() === u?.user?.id.toString()) {
                               return {
-                                token: u.user.token,
-                                link: u.user.companyLink.replace(/^https:\/\//i, "http://"),
+                                token: u?.user?.token,
+                                link: u?.user?.companyLink.replace(/^https:\/\//i, "http://"),
                               };
                             }
                             return null;

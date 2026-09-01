@@ -660,14 +660,14 @@ const MenuTab = ({
             style={{
               marginLeft: isHorizontal ? 16 : 0,
               marginTop: isHorizontal ? 0 : 4,
-             }}
+            }}
           >
             <TranslatedText
               numberOfLines={2}
               text={item.name}
               style={[
-                 
-                 
+
+
                 theme === "dark" && { color: "white" },
               ]}
             ></TranslatedText>
@@ -678,9 +678,6 @@ const MenuTab = ({
                 style={[
                   list.length > 8 ? styles.subtitleV2 : styles.subtitle,
                   theme === "dark" && { color: "white" },
-                  !isHorizontal && {
-                    textAlign: "center",
-                  },
                 ]}
               ></TranslatedText>
             )}
