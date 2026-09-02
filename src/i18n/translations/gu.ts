@@ -1,6 +1,6 @@
 export default {
   common: {
-    appName: 'DevERP',
+    appName: 'Oeuvre Healthcare Pvt Ltd.',
     loading: 'પ્રક્રિયા થઈ રહ્યું છે...',
     error: 'કોઈ ભૂલ થઈ છે',
     success: 'સફળ!',
@@ -31,7 +31,7 @@ export default {
     signUp: 'નોંધણી કરો',
     signIn: 'પ્રવેશ કરો',
     signingIn: 'પ્રવેશ થઈ રહ્યો છે...',
-    welcomeDevERP: 'DevERP માં સ્વાગત છે',
+    welcomeDevERP: 'Oeuvre Healthcare Pvt Ltd. માં સ્વાગત છે',
     addAccount: 'ખાતું ઉમેરો',
     signInToAddAccount: 'બીજું ખાતું ઉમેરવા માટે પ્રવેશ કરો',
     signInToAccount: 'તમારા ખાતુંમાં પ્રવેશ કરો',
@@ -253,7 +253,7 @@ export default {
     text50: 'રિપોર્ટ્સ',
     text51: 'અહીં રિપોર્ટ શોધો...',
     text52: 'ડેશબોર્ડ',
-    text53: 'DevERP માં સ્વાગત છે',
+    text53: 'Oeuvre Healthcare Pvt Ltd. માં સ્વાગત છે',
     text54: 'તમારો વ્યવસાય, સરળ બનાવ્યો.',
   },
   text1: "સ્થાનની પરવાનગી નકારવામાં આવી છે. એપ ચાલુ રાખવા માટે કૃપા કરીને પરવાનગી આપો.",

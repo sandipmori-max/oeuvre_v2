@@ -1,6 +1,6 @@
 export default {
   common: {
-    appName: 'DevERP',
+    appName: 'Oeuvre Healthcare Pvt Ltd.',
     loading: 'Loading...',
     error: 'An error occurred',
     success: 'Success!',
@@ -31,7 +31,7 @@ export default {
     signUp: 'Sign Up',
     signIn: 'Sign In',
     signingIn: 'Signing In...',
-    welcomeDevERP: 'Welcome DevERP',
+    welcomeDevERP: 'Welcome Oeuvre Healthcare Pvt Ltd.',
     addAccount: 'Add Account',
     signInToAddAccount: 'Sign in to add another account',
     signInToAccount: 'Sign in to your account',
@@ -253,7 +253,7 @@ export default {
     text50: "Reports",
     text51: "Search report here...",
     text52: "Dashboard",
-    text53: "Welcome to DevERP",
+    text53: "Welcome to Oeuvre Healthcare Pvt Ltd.",
     text54: "Your business, simplified."
   },
   text1: "Location permission has been denied. Please allow it to continue using the app.",

@@ -79,7 +79,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
   }, [isLoading, validationLoading, erpLoginLoading]);
 
   const initialFormValues = {
-    company_code: '',
+    company_code: 'oeuvre01',
     user: '',
     password: '',
     firebaseid: fcmToken,
@@ -169,7 +169,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
       >
         {({ handleChange, handleBlur, values, errors, touched, handleSubmit }) => (
           <>
-            {['company_code', 'user', 'password'].map((field, index) => (
+            {['user', 'password'].map((field, index) => (
               <Animated.View
                 key={field}
                 style={{
