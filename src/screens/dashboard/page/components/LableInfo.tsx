@@ -11,6 +11,8 @@ const LableInfo = ({
   theme,
   value
 }: any) => {
+
+  console.log("isFromDashboard", isFromDashboard, )
   return (
     <>
       {

@@ -123,7 +123,7 @@ const AttendanceScreen = () => {
 
           {isListVisible && (
             <ERPIcon
-              name="date-range"
+              name={showDateFilter ? 'close':'filter-alt'}
               onPress={() => {
                 setShowDateFilter(!showDateFilter);
               }}
@@ -516,7 +516,7 @@ const AttendanceScreen = () => {
 
               <List
                 selectedMonth={formattedMonth}
-                showFilter={false}
+                showFilter={showDateFilter}
                 fromDate={fromDate}
                 toDate={toDate}
               />

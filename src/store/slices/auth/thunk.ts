@@ -323,7 +323,7 @@ export const getERPMenuThunk = createAsyncThunk(
         return response;
       }
 
-      return rejectWithValue("Invalid menu response format");
+      return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");
     } catch (error: any) {
       if (error?.message === 'Invalid Token') {
         return rejectWithValue("Please check your network and try again. You can tap Refresh or close and reopen the app");

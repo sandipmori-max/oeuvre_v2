@@ -112,6 +112,8 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const translateX = useRef(new Animated.Value(width)).current;
   const [listData, setListData] = useState<any[]>([]);
+  const [listLeaveBalData, setListLeaveBalData] = useState<any[]>([]);
+  const [listShiftData, setListShiftData] = useState<any>();
 
   const {
     dashboard,
@@ -122,6 +124,8 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
     attendanceDone,
   } = useAppSelector((state) => state.auth);
 
+
+  console.log("listLeaveBalDatalistLeaveBalDatalistLeaveBalDatalistLeaveBalData", listLeaveBalData)
   const runAI = async () => {
     try {
       const message = await getDashboardAI(dashboard);
@@ -151,38 +155,6 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
     show: boolean;
   }>(null);
   const [chartType, setChartType] = useState("");
-  const [openSheet, setOpenSheet] = useState(false);
-
-  const CHART_TYPES = [
-    {
-      type: "BarChart",
-      icon: "poll",
-    },
-    {
-      type: "LineChart",
-      icon: "show-chart",
-    },
-    {
-      type: "PieChart",
-      icon: "pie-chart",
-    },
-    {
-      type: "PopulationPyramid",
-      icon: "equalizer",
-    },
-    {
-      type: "BubbleChart",
-      icon: "bubble-chart",
-    },
-    {
-      type: "Default",
-      icon: "autorenew",
-    },
-  ];
-
-  const activeChart = CHART_TYPES.find(
-    (item) => item.type === chartType
-  );
 
   const { appBottomMenuList, appDrawerMenuList } = useAppSelector((state) => state?.auth);
   const theme = useAppSelector((state) => state?.theme.mode);
@@ -221,16 +193,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
       !hasHtmlContent(item.data),
   );
 
-  // const htmlItems = filteredDashboard.filter((item) =>
-  //   hasHtmlContent(item.data),
-  // );
-
-
   const emptyItems = filteredDashboard.filter((item) => item?.data === "");
-
-  // const textItems = filteredDashboard.filter(
-  //   (item) => item.data && !hasHtmlContent(item.data),
-  // );
 
   const formatTime = time => {
     const minutes = Math.floor(time / 60);
@@ -649,6 +612,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
       console.log("Error during refresh:", error);
     }
   };
+
   const pieChartData = filteredDashboard
     .filter((item) => {
       const num = Number(item?.data);
@@ -886,6 +850,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
       </TouchableOpacity>
     )
   }
+
   const getCurrentMonthRange = useCallback(() => {
     const now = new Date();
 
@@ -1178,31 +1143,136 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
     getCurrentMonthRange();
   }, [user, reLoading]);
 
+
+  const parseERPResponse = (response: any) => {
+    const parsed =
+      typeof response === "string"
+        ? JSON.parse(response)
+        : response;
+
+    const final =
+      parsed?.d
+        ? JSON.parse(parsed.d)
+        : parsed;
+
+    return final?.data || final || [];
+  };
+
+
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const raw = await dispatch(
+      const results = await Promise.allSettled([
+        dispatch(
           getERPListDataThunk({
             page: "PunchIn",
-            fromDate: fromDate,
-            toDate: toDate,
+            fromDate,
+            toDate,
             param: "",
             branch: "",
-          }),
-        ).unwrap();
-        const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-        const final = parsed?.d ? JSON.parse(parsed?.d) : parsed;
-        setListData(final?.data || final || []);
-        const res = await dispatch(getLastPunchInThunk()).unwrap();
+          })
+        ).unwrap(),
+
+        dispatch(
+          getERPListDataThunk({
+            page: "LeaveBalancePendingMobApp",
+            fromDate,
+            toDate,
+            param: "",
+            branch: "",
+          })
+        ).unwrap(),
+
+
+        dispatch(
+          getERPListDataThunk({
+            page: "UserShift",
+            fromDate,
+            toDate,
+            param: "",
+            branch: "",
+          })
+        ).unwrap(),
+
+        dispatch(getLastPunchInThunk()).unwrap(),
+      ]);
+
+      // -----------------------------
+      // Punch In
+      // -----------------------------
+      if (results[0].status === "fulfilled") {
+        try {
+          const data = parseERPResponse(results[0].value);
+          setListData(data);
+        } catch (err) {
+          console.log("PunchIn parsing error:", err);
+          setListData([]);
+        }
+      } else {
+        console.log("PunchIn API failed:", results[0].reason);
+        setListData([]);
+      }
+
+      // -----------------------------
+      // Leave Balance
+      // -----------------------------
+      if (results[1].status === "fulfilled") {
+        try {
+          const data = parseERPResponse(results[1].value);
+          setListLeaveBalData(data);
+        } catch (err) {
+          console.log("LeaveBalance parsing error:", err);
+          setListLeaveBalData([]);
+        }
+      } else {
+        console.log(
+          "LeaveBalance API failed:",
+          results[1].reason
+        );
+
+        setListLeaveBalData([]);
+      }
+
+      // -----------------------------
+      // Shift Data 
+      // -----------------------------
+      if (results[2].status === "fulfilled") {
+        try {
+          const data = parseERPResponse(results[2].value);
+          console.log("datadatadata--   -", data)
+
+          setListShiftData(data);
+        } catch (err) {
+          console.log("LeaveBalance parsing error:", err);
+          setListShiftData([]);
+        }
+      } else {
+        console.log(
+          "Shift API failed:",
+          results[2].reason
+        );
+
+        setListLeaveBalData([]);
+      }
+
+
+      // -----------------------------
+      // Last Punch In
+      // -----------------------------
+      if (results[3].status === "fulfilled") {
+        const res = results[3].value;
+
         if (res?.id !== "0" && res?.id !== 0) {
           setAttendance(res);
         } else {
           setAttendance(null);
         }
-      } catch (err) {
-        console.log("Error:", err);
+      } else {
+        console.log(
+          "LastPunchIn API failed:",
+          results[2].reason
+        );
+
         setAttendance(null);
-        setListData([]);
       }
     };
 
@@ -1211,21 +1281,9 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
 
   const intervalRef = useRef(null);
 
-  useEffect(() => {
-    if (!attendance?.intime) return;
+  useEffect(() => { 
 
-    const [hours, minutes] = attendance.intime.split(":").map(Number);
-
-    const inTimeDate = new Date();
-    inTimeDate.setHours(hours, minutes, 0, 0);
-
-    const breakStart = new Date();
-    breakStart.setHours(13, 30, 0, 0);
-
-    const breakEnd = new Date();
-    breakEnd.setHours(14, 30, 0, 0);
-
-    const updateWorkingTime = () => {
+     const updateWorkingTime = () => {
       const now = new Date();
 
       if (now >= breakStart && now < breakEnd) {
@@ -1256,13 +1314,104 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
       );
     };
 
+    if (!attendance?.intime) return;
+
+    const [hours, minutes] = attendance?.intime.split(":").map(Number);
+
+    const inTimeDate = new Date();
+    inTimeDate.setHours(hours, minutes, 0, 0);
+
+    const shift = listShiftData && listShiftData[0];
+
+    if(!shift){
+        const breakStart = new Date();
+        breakStart.setHours(13, 30, 0, 0);
+        const breakEnd = new Date();
+        breakEnd.setHours(14, 30, 0, 0);
+        updateWorkingTime();
+
+         intervalRef.current = setInterval(updateWorkingTime, 1000);
+
+        return () => clearInterval(intervalRef.current);
+       
+    } 
+    const breakStart = new Date();
+
+    const [time, modifier] = shift?.breakstart.split(" ");
+
+    let [brhours, brminutes] = time.split(":").map(Number);
+
+    if (modifier === "PM" && hours !== 12) {
+      brhours += 12;
+    }
+
+    if (modifier === "AM" && hours === 12) {
+      brhours = 0;
+    }
+
+    breakStart.setHours(brhours, brminutes, 0, 0);
+
+
+    const breakEnd = new Date();
+
+    const [brendtime, brendmodifier] = shift.breakend.split(" ");
+    let [brendhours, brendminutes] = brendtime.split(":").map(Number);
+
+    if (brendmodifier === "PM" && hours !== 12) {
+      brendhours += 12;
+    }
+
+    if (modifier === "AM" && hours === 12) {
+      brendhours = 0;
+    }
+
+    breakEnd.setHours(brendhours, brendminutes, 0, 0);
+
+   
+
     updateWorkingTime();
 
     intervalRef.current = setInterval(updateWorkingTime, 1000);
 
     return () => clearInterval(intervalRef.current);
-  }, [attendance?.intime]);
+  }, [attendance?.intime, listShiftData]);
 
+
+  const statusCards = useMemo(() => {
+    if (!Array.isArray(listData) || listData.length === 0) {
+      return [];
+    }
+
+    const statusMap = new Map<string, number>();
+
+    listData.forEach((item) => {
+      if (!item || typeof item !== "object") {
+        return;
+      }
+
+      const rawStatus = (item as any)?.status;
+
+      if (typeof rawStatus !== "string") {
+        return;
+      }
+
+      const status = rawStatus.trim();
+
+      if (!status) {
+        return;
+      }
+
+      statusMap.set(
+        status,
+        (statusMap.get(status) ?? 0) + 1
+      );
+    });
+
+    return Array.from(statusMap, ([status, count]) => ({
+      status,
+      count,
+    }));
+  }, [listData]);
   if (isDashboardLoading) return <FullViewLoader isShowTop={false} />;
   if (error) {
     return (
@@ -2469,9 +2618,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                               />
                             </View>
 
-                            {user?.company_code
-                              ?.toLowerCase()
-                              ?.includes("deverp") &&
+                            {
                               attendance?.intime && (
                                 <>
                                   <View
@@ -2537,9 +2684,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                 </>
                               )}
 
-                            {user?.company_code
-                              ?.toLowerCase()
-                              ?.includes("deverp") &&
+                            {
                               attendance?.intime && (
                                 <>
                                   <View style={styles.timeContainer}>
@@ -2727,15 +2872,16 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                               </View>
                             </View>
                           )} */}
-                            {user?.company_code
-                              ?.toLowerCase()
-                              ?.includes("deverp") &&
+                             
+                            {
                               attendance?.intime && (
+
                                 <>
+
+
                                   <View
                                     style={{
                                       marginTop: 4,
-                                      marginBottom: 4,
                                       backgroundColor:
                                         theme === "dark" ? "gray" : "#f5f5f5",
                                       flexDirection: "row",
@@ -2769,7 +2915,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                           fontWeight: "600",
                                         }}
                                       >
-                                        Summary
+                                        Attendance Summary
                                       </Text>
                                     </View>
 
@@ -2797,20 +2943,30 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                       </Text>
                                     </TouchableOpacity>
                                   </View>
-                                </>
-                              )}
+                                  <View
+                                    style={[
+                                      styles.timeContainer,
+                                      {
+                                        flexDirection: "row",
+                                        flexWrap: "wrap",
+                                        justifyContent: "space-between",
+                                      },
+                                    ]}
+                                  >
 
-                            {user?.company_code
-                              ?.toLowerCase()
-                              ?.includes("deverp") &&
-                              attendance?.intime && (
-                                <>
-                                  <View style={styles.timeContainer}>
-                                    {/* Clock In */}
-                                    <View
-                                      style={[styles.timeItem, { width: "23%" }]}
-                                    >
+
+                                    {statusCards.length > 0 && statusCards?.map((item) => (
                                       <View
+                                        key={item.status}
+                                        style={[
+                                          styles.timeItem,
+                                          {
+                                            width: "31%",
+                                            marginBottom: 8,
+                                          },
+                                        ]}
+                                      >
+                                        {/* <View
                                         style={[
                                           styles.iconTimeContainer,
                                           {
@@ -2822,7 +2978,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                         ]}
                                       >
                                         <MaterialIcons
-                                          name="co-present"
+                                          name="info"
                                           size={22}
                                           color={
                                             theme === "dark"
@@ -2830,164 +2986,138 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                               : ERP_COLOR_CODE.ERP_APP_COLOR
                                           }
                                         />
-                                      </View>
-                                      <Text
-                                        style={[
-                                          styles.timeText,
-                                        ]}
-                                      >
-                                        {present}
-                                      </Text>
-                                      <Text
-                                        style={[
-                                          styles.labelText,
-                                        ]}
-                                      >
-                                        Present
-                                      </Text>
-                                    </View>
-                                    <View
-                                      style={[
-                                        styles.timeItem,
-                                        {
-                                          width: "23%",
-                                        },
-                                      ]}
-                                    >
-                                      <View
-                                        style={[
-                                          styles.iconTimeContainer,
-                                          {
-                                            backgroundColor:
-                                              theme === "dark"
-                                                ? "gray"
-                                                : "#f5f5f5",
-                                          },
-                                        ]}
-                                      >
-                                        <MaterialIcons
-                                          name="access-time"
-                                          size={22}
-                                          color={
-                                            theme === "dark"
-                                              ? "white"
-                                              : ERP_COLOR_CODE.ERP_ERROR
-                                          }
-                                        />
-                                      </View>
-                                      <Text
-                                        style={[
-                                          styles.timeText,
-                                        ]}
-                                      >
-                                        {leave}
-                                      </Text>
-                                      <Text
-                                        style={[
-                                          styles.labelText,
-                                        ]}
-                                      >
-                                        Absents
-                                      </Text>
-                                    </View>
-                                    {/* Clock Out */}
-                                    <TouchableOpacity
-                                      style={[
-                                        styles.timeItem,
-                                        {
-                                          width: "23%",
-                                        },
-                                      ]}
-                                    >
-                                      <View
-                                        style={[
-                                          styles.iconTimeContainer,
-                                          {
-                                            backgroundColor:
-                                              theme === "dark"
-                                                ? "gray"
-                                                : "#f5f5f5",
-                                          },
-                                        ]}
-                                      >
-                                        <MaterialIcons
-                                          name="access-alarm"
-                                          size={22}
-                                          color={
-                                            theme === "dark"
-                                              ? "white"
-                                              : ERP_COLOR_CODE.ERP_ERROR
-                                          }
-                                        />
-                                      </View>
-                                      <Text
-                                        style={[
-                                          styles.timeText,
-                                        ]}
-                                      >
-                                        {late}
-                                      </Text>
-                                      <Text
-                                        style={[
-                                          styles.labelText,
-                                        ]}
-                                      >
-                                        Late
-                                      </Text>
-                                    </TouchableOpacity>
+                                      </View> */}
 
-                                    <View
-                                      style={[
-                                        styles.timeItem,
-                                        {
-                                          width: "23%",
-                                        },
-                                      ]}
-                                    >
-                                      <View
-                                        style={[
-                                          styles.iconTimeContainer,
-                                          {
-                                            backgroundColor:
-                                              theme === "dark"
-                                                ? "gray"
-                                                : "#f5f5f5",
-                                          },
-                                        ]}
-                                      >
-                                        <MaterialIcons
-                                          name="access-time"
-                                          size={22}
-                                          color={
-                                            theme === "dark" ? "white" : "#ff9800"
-                                          }
-                                        />
+                                        <Text style={[styles.timeText, {
+                                          marginTop: 12
+                                        }]}>
+                                          {item.count}
+                                        </Text>
+
+                                        <Text
+                                          style={[
+                                            styles.labelText,
+                                            {
+                                              textAlign: "center",
+                                            },
+                                          ]}
+                                          numberOfLines={1}
+                                        >
+                                          {item.status}
+                                        </Text>
                                       </View>
-                                      <Text
-                                        style={[
-                                          styles.timeText,
-                                        ]}
-                                      >
-                                        {lessHours}
-                                      </Text>
-                                      <Text
-                                        style={[
-                                          styles.labelText,
-                                        ]}
-                                      >
-                                        Less-Hr
-                                      </Text>
-                                    </View>
+                                    ))}
                                   </View>
                                 </>
+
                               )}
 
-                            {user?.company_code
-                              ?.toLowerCase()
-                              ?.includes("deverp") &&
-                              attendance?.intime && (
-                                <LeaveBalanceSection />
-                            )}
+
+
+                            {
+                              attendance?.intime && listLeaveBalData.length > 0 && (
+                                <LeaveBalanceSection listLeaveBalData={listLeaveBalData} />
+                              )}
+
+                            {
+                              listShiftData && attendance?.intime && (
+                                <>
+                                  <View
+                                    style={{
+                                      marginTop: 4,
+                                      backgroundColor:
+                                        theme === "dark" ? "gray" : "#f5f5f5",
+                                      flexDirection: "row",
+                                      justifyContent: "space-between",
+                                      padding: 8,
+                                      borderRadius: 4,
+                                      alignItems: "center",
+                                      marginHorizontal: 8,
+                                    }}
+                                  >
+                                    <View
+                                      style={{
+                                        justifyContent: "center",
+                                        alignContent: "center",
+                                        alignItems: "center",
+                                        flexDirection: "row",
+                                        gap: 4,
+                                      }}
+                                    >
+                                      <MaterialIcons
+                                        size={14}
+                                        color={
+                                          theme === "dark" ? "white" : "gray"
+                                        }
+                                        name="dashboard"
+                                      />
+                                      <Text
+                                        style={{
+                                          color:
+                                            theme === "dark" ? "white" : "black",
+                                          fontWeight: "600",
+                                        }}
+                                      >
+                                        Shift Summary
+                                      </Text>
+                                    </View>
+
+                                  </View>
+                                  <View
+                                    style={[
+                                      styles.timeContainer,
+                                      {
+                                        flexDirection: "row",
+                                        flexWrap: "wrap",
+                                        justifyContent: "space-between",
+                                      },
+                                    ]}
+                                  >
+
+
+                                    {listShiftData.length > 0 &&
+                                      listShiftData.map((item, index) => (
+                                        <View
+                                          key={`${item?.shiftname}-${index}`}
+                                          style={styles.shiftCard}
+                                        >
+                                          <View style={styles.shiftHeader}>
+                                            <Text style={styles.shiftNameText}>
+                                              {item?.shiftname}
+                                            </Text>
+
+                                            <Text style={styles.workingHoursText}>
+                                              {item?.totalworkinghours} hr.
+                                            </Text>
+                                          </View>
+
+                                          <View style={styles.shiftRow}>
+                                            <Text style={styles.shiftLabel}>Shift Time</Text>
+                                            <Text style={styles.shiftValue}>
+                                              {item?.starttime} - {item?.endtime}
+                                            </Text>
+                                          </View>
+
+                                          <View style={styles.shiftRow}>
+                                            <Text style={styles.shiftLabel}>Break Time</Text>
+                                            <Text style={styles.shiftValue}>
+                                              {item?.breakstart} - {item?.breakend}
+                                            </Text>
+                                          </View>
+
+                                          <View style={styles.shiftRow}>
+                                            <Text style={styles.shiftLabel}>Weekly off</Text>
+                                            <Text style={styles.shiftValue}>
+                                              {item?.weekoff}
+                                            </Text>
+                                          </View>
+                                        </View>
+                                      ))}
+                                  </View>
+                                </>
+
+                              )}
+
 
                           </View>
                         )}

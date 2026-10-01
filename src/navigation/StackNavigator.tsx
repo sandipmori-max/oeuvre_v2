@@ -21,6 +21,7 @@ import MaterialIcons from "@react-native-vector-icons/material-icons";
 import LocationTrackScreen from "../screens/dashboard/tabs/home/LocationTrack";
 import FaceCameraScreen from "../screens/dashboard/attendance/components/FaceCameraScreen";
 import PrivacyPolicyScreen from "../screens/dashboard/privacy/PrivacyPolicyScreen";
+// import TextScannerScreen from "../screens/dashboard/page/components/TextScannerScreen";
 
 const Stack = createStackNavigator<any>();
 
@@ -208,6 +209,13 @@ const StackNavigator = () => {
         component={DisplayScreen}
         options={screenOptions}
       /> */}
+      {/* <Stack.Screen
+  name="TextScannerScreen"
+  component={TextScannerScreen}
+  options={{
+    headerShown: false,
+  }}
+/> */}
     </Stack.Navigator>
   );
 };

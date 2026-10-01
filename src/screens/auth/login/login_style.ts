@@ -70,7 +70,7 @@ export const styles = StyleSheet.create({
   },
   loginButton: {
     backgroundColor: ERP_COLOR_CODE.ERP_APP_COLOR,
-    padding:  10,
+    padding:  14,
     borderRadius: 8,
     marginBottom: 20, 
     marginTop: 8,

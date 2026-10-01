@@ -72,7 +72,6 @@ import TranslatedText from "../tabs/home/TranslatedText";
 import { setReloadApp } from "../../../store/slices/reloadApp/reloadAppSlice";
 import { updateAppMenuList } from "../../../store/slices/auth/authSlice";
 import DocScan from "./components/DocScan";
-import DisabledDateTime from "./components/DisabledDateTime";
 
 type PageRouteParams = { PageScreen: { item: any } };
 
@@ -168,29 +167,10 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
   const [locationEnabled, setLocationEnabled] = useState<boolean | null>(null);
   const [modalClose, setModalClose] = useState(false);
   const [isSettingVisible, setIsSettingVisible] = useState(false);
-  const [myScript, setMyScript] = useState(
-    [
-    {
-        "logic": "AND",
-        "rules": [
-            {
-                "type": "formula",
-                "formulaType": "dateDiff",
-                "fieldName": "totalday",
-                "fromField": "leavedatefrom",
-                "toField": "leavedateto",
-                "inclusive": true,
-                "triggerFields": [
-                    "leavedatefrom",
-                    "leavedateto"
-                ]
-            }
-        ]
-    },
-]
+  const [myScript, setMyScript] = useState();
 
+  console.log("controlscontrolscontrolscontrols", controls)
 
-  );
   const [backgroundDeniedModal, setBackgroundDeniedModal] = useState(false);
   const isCheckingPermission = useRef(false);
   const locationSyncInterval = useRef(null);
@@ -775,8 +755,7 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
       isFromChild: boolean;
     }) => {
       const setValue = (val, source) => {
-
-        console.log("valvalvalvalvalvalvalvalvalvalval", val, source)
+ 
         if (myScript && source && source === "isFromDropdown") {
           const raw = myScript.find((obj) =>
             obj.rules?.some(
@@ -801,15 +780,11 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
               rule.formulaType === "componentHideVisible"
           );
 
-          console.log("isComponentHideVisibleisComponentHideVisibleisComponentHideVisible", isComponentHideVisible)
-
           if (isComponentHideVisible) {
             const updatedValues = {
               ...formValues,
               [item.field]: val,
             };
-
-            console.log("updatedValuesupdatedValuesupdatedValues", updatedValues)
 
             setFormValues(updatedValues);
 
@@ -818,8 +793,6 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
               updatedValues,
               item.field
             );
-
-            console.log("resultresultresult", result)
 
             if (result.actions?.length) {
               const updatedControls = applyActionsToControls(
@@ -963,6 +936,8 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
 
       let content = null;
 
+      // 
+     
       //BoolInput
       if (item?.ctltype === "BOOL") {
         const rawVal = formValues[item?.field] ?? item?.text;
@@ -977,7 +952,8 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
             }}
           />
         );
-      } else if (item?.ctltype === "IMAGE" && item?.field?.startsWith("doc_scan_")) {
+      } 
+      else if (item?.ctltype === "IMAGE" && item?.field?.startsWith("doc_scan_")) {
         content = (
           <DocScan
             item={item}
@@ -993,6 +969,17 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
             errors={errors}
           />
         );
+      }
+
+      else if (item?.ctltype === "IMAGE" && item?.field?.startsWith("invoice_reader_")){
+        content = <BusinessCardView
+                baseLink={baseLink}
+                infoData={infoData}
+                setValue={setValue}
+                controls={controls}
+                item={item}
+                isFromInvoiceReader={true}
+              />
       }
       //----PENDING----CustomMultiPicker
       else if (item?.field === "---") {
@@ -1086,6 +1073,7 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
                 setValue={setValue}
                 controls={controls}
                 item={item}
+                isFromInvoiceReader={false}
               />
             ) : (
               <Media
@@ -1096,6 +1084,7 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
                 isFromNew={isFromNew}
                 handleAttachment={handleAttachment}
                 errors={errors}
+                isTextScan={true}
               />
             )}
           </>
@@ -1174,6 +1163,8 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
           />
         );
       }
+
+
       //Input
       else {
         content = (
@@ -1195,6 +1186,8 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
           />
         );
       }
+
+       
       //content
       return (
         <>

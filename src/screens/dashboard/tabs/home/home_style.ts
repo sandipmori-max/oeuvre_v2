@@ -514,4 +514,49 @@ export const styles = StyleSheet.create({
     marginTop: 2,
     marginBottom: 8
   },
+  shiftCard: {
+  width: "100%",
+  padding: 14,
+  marginBottom: 10,
+  borderRadius: 4,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#e5e7eb",
+},
+
+shiftHeader: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 12,
+},
+
+shiftNameText: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#222",
+},
+
+workingHoursText: {
+  fontSize: 13,
+  fontWeight: "600",
+  color: ERP_COLOR_CODE.ERP_APP_COLOR,
+},
+
+shiftRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  paddingVertical: 6,
+},
+
+shiftLabel: {
+  fontSize: 13,
+  color: "#777",
+},
+
+shiftValue: {
+  fontSize: 13,
+  fontWeight: "600",
+  color: "#333",
+},
 });

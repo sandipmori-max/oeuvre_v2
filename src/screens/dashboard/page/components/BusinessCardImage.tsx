@@ -30,6 +30,7 @@ import RNFS from "react-native-fs";
 import ImageResizer from "@bam.tech/react-native-image-resizer";
 import { useNavigation } from "@react-navigation/native";
 import { downloadAndShare } from "../../../../utils/helpers";
+import InvoiceForm from "./InvoiceForm";
 
 
 const { DocumentScanner } = NativeModules;
@@ -57,9 +58,11 @@ const BusinessCardView = ({
   item,
   baseLink,
   infoData,
+  isFromInvoiceReader = false
 }: any) => {
 
-  const navigation = useNavigation();
+  console.log("isFromInvoiceReaderisFromInvoiceReaderisFromInvoiceReaderisFromInvoiceReader", isFromInvoiceReader)
+    const navigation = useNavigation();
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [base64, setBase64] = useState(false);
@@ -67,8 +70,11 @@ const BusinessCardView = ({
   const [showPicker, setShowPicker] = useState(false);
   const { t } = useTranslations();
   const { height, width } = useWindowDimensions();
-  const isLandscape = width > height;
+  const [scanLoader, setScanLoader] = useState(false)
 
+  const isLandscape = width > height;
+  const [invoiceData, setInvoiceData] =
+    useState<any>(null);
   const getImageUri = (type: "small" | "large") => {
     const base =
       imageUri ||
@@ -511,8 +517,217 @@ const BusinessCardView = ({
     return result;
   };
 
+  const MINDEE_URL = "https://api-v2.mindee.net";
+  const MINDEE_MODEL_ID = "c24a4d2b-dbe3-4dc2-8781-9d8255eb7cae";
+
+
+  const MINDEE_API_KEY = "md_rDhKjr9Hd1Sfn-Xz1qQQui3Aw5WPGVgNAkpqZ2nRqrs";
+
+  // ----------------------------------------
+  // 1. ENQUEUE
+  // ----------------------------------------
+
+  const enqueueMindeeInvoice = async (fileUri: string) => {
+    const formData = new FormData();
+
+    formData.append("file", {
+      uri: fileUri,
+      type: "image/jpeg",
+      name: `invoice-${Date.now()}.jpg`,
+    } as any);
+
+    formData.append("model_id", MINDEE_MODEL_ID);
+
+    const response = await fetch(
+      `${MINDEE_URL}/v2/inferences/enqueue`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: MINDEE_API_KEY,
+          Accept: "application/json",
+        },
+        body: formData,
+      },
+    );
+
+    const text = await response.text();
+
+    console.log(
+      "MINDEE ENQUEUE STATUS:",
+      response.status,
+    );
+
+    console.log(
+      "MINDEE ENQUEUE RESPONSE:",
+      text,
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Mindee enqueue error ${response.status}: ${text}`,
+      );
+    }
+
+    return JSON.parse(text);
+  };
+
+
+  // ----------------------------------------
+  // 2. GET JOB
+  // ----------------------------------------
+
+  const getMindeeJob = async (jobId: string) => {
+    const resultUrl =
+      `${MINDEE_URL}/v2/products/extraction/results/${jobId}`;
+
+    console.log("[1] Result URL:", resultUrl);
+
+    const response = await fetch(resultUrl, {
+      method: "GET",
+      headers: {
+        Authorization: MINDEE_API_KEY,
+        Accept: "application/json",
+      },
+    });
+
+    console.log("[2] HTTP STATUS:", response.status);
+
+    const text = await response.text();
+
+    console.log("[3] RESPONSE:", text);
+
+    // --------------------------------
+    // NOT READY
+    // --------------------------------
+
+    if (response.status === 404) {
+      const errorData = JSON.parse(text);
+
+      if (errorData?.code === "404-008") {
+        console.log(
+          "[4] Invoice is still processing..."
+        );
+
+        return {
+          ready: false,
+          data: null,
+        };
+      }
+    }
+
+    // --------------------------------
+    // OTHER ERRORS
+    // --------------------------------
+
+    if (!response.ok) {
+      throw new Error(
+        `Mindee error ${response.status}: ${text}`,
+      );
+    }
+
+    // --------------------------------
+    // READY
+    // --------------------------------
+
+    const data = JSON.parse(text);
+
+    console.log("[5] Invoice is READY");
+
+    return {
+      ready: true,
+      data,
+    };
+  };
+
+
+  // ----------------------------------------
+  // 3. WAIT FOR JOB
+  // ----------------------------------------
+
+  const waitForMindeeJob = async (
+    jobId: string,
+    maxAttempts = 30,
+  ) => {
+    for (
+      let attempt = 1;
+      attempt <= maxAttempts;
+      attempt++
+    ) {
+      console.log(
+        `========== MINDEE POLL ${attempt}/${maxAttempts} ==========`
+      );
+
+      const result =
+        await getMindeeJob(jobId);
+
+      // Still processing
+      if (!result.ready) {
+        console.log(
+          "⏳ Mindee still processing..."
+        );
+
+        await new Promise(resolve =>
+          setTimeout(resolve, 2000),
+        );
+
+        continue;
+      }
+
+      // Ready
+      console.log(
+        "✅ Mindee invoice processing completed"
+      );
+
+      return result.data;
+    }
+
+    throw new Error(
+      "Mindee processing timeout",
+    );
+  };
+
+  // ----------------------------------------
+  // 4. GET FINAL RESULT
+  // ----------------------------------------
+
+  const getMindeeResult = async (
+    resultUrl: string,
+  ) => {
+    const response = await fetch(
+      resultUrl,
+      {
+        method: "GET",
+        headers: {
+          Authorization: MINDEE_API_KEY,
+          Accept: "application/json",
+        },
+      },
+    );
+
+    const text = await response.text();
+
+    console.log(
+      "MINDEE RESULT STATUS:",
+      response.status,
+    );
+
+    console.log(
+      "MINDEE RESULT:",
+      text,
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Mindee result error ${response.status}: ${text}`,
+      );
+    }
+
+    return JSON.parse(text);
+  };
+
   const handleScan = async () => {
     try {
+      setScanLoader(true)
       const result = await launchScannerAsync({
         quality: 0.8,
         includeExif: true,
@@ -530,6 +745,49 @@ const BusinessCardView = ({
       }
 
       if (result?.images?.length > 0) {
+        const processed = result.images.map((img: any) => ({
+          ...img,
+          base64: img.base64 || null,
+        }));
+
+
+        setCacheBuster(Date.now());
+
+        if(isFromInvoiceReader){
+          console.log("isFromInvoiceReader00000000000")
+          const enqueueResponse =
+          await enqueueMindeeInvoice(processed[0].uri);
+
+        const jobId =
+          enqueueResponse?.job?.id;
+
+        if (!jobId) {
+          throw new Error(
+            "Mindee Job ID not received",
+          );
+        }
+
+        console.log(
+          "Mindee Job ID:",
+          jobId,
+        );
+
+        const invoiceData =
+          await waitForMindeeJob(jobId);
+
+        console.log(
+          "FINAL INVOICE DATA:",
+          JSON.stringify(
+            invoiceData,
+            null,
+            2,
+          ),
+        );
+       
+        setInvoiceData(invoiceData);
+        }else {
+
+          if (result?.images?.length > 0) {
         const processed = result.images.map((img: any) => ({
           ...img,
           base64: img.base64 || null,
@@ -556,15 +814,26 @@ const BusinessCardView = ({
         setImageUri(processed[0]?.uri);
       } else {
       }
+
+
+       
+        }
+        
+
+     
+
+
+      }
     } catch (error: any) {
       Alert.alert("Error", error.message || "Something went wrong");
     } finally {
+       setScanLoader(false)
       setShowPicker(false);
     }
   };
 
   return (
-    <ScrollView   bounces={false}>
+    <View >
       <Text style={styles.title}>{item?.fieldtitle}</Text>
 
       <View style={[styles.cardContainer,]}>
@@ -639,6 +908,21 @@ const BusinessCardView = ({
         </TouchableOpacity>
       </View>
 
+      {invoiceData && isFromInvoiceReader && (
+        <View style={{ flex: 1 }}>
+          <InvoiceForm
+            mindeeData={invoiceData}
+            onSave={(data) => {
+              console.log(
+                "FINAL ERP INVOICE:",
+                JSON.stringify(data, null, 2),
+              );
+
+              // Yaha aapka ERP save API call
+            }}
+          />
+        </View>
+      )}
       <Modal
         supportedOrientations={["portrait", "landscape"]}
         visible={showPicker}
@@ -653,43 +937,53 @@ const BusinessCardView = ({
         <View style={styles.bottomSheet}>
           <View style={styles.sheetHeader}>
             <Text style={styles.sheetTitle}>{t("title.title10")}</Text>
-            <TouchableOpacity
-              onPress={() => setShowPicker(false)}
-              style={styles.closeIcon}
-            >
-              <MaterialIcons name="close" size={22} color="#333" />
-            </TouchableOpacity>
+            {
+              !scanLoader && <TouchableOpacity
+                onPress={() => setShowPicker(false)}
+                style={styles.closeIcon}
+              >
+                <MaterialIcons name="close" size={22} color="#333" />
+              </TouchableOpacity>
+            }
+
           </View>
+          {
+            scanLoader ? 
+            <ActivityIndicator size={'large'} color={'black'} /> : <View style={styles.optionRow}>
+              <TouchableOpacity
+                style={styles.optionCard}
+                onPress={handleScan}
+              >
+                <MaterialIcons name="document-scanner" size={40} color={ERP_COLOR_CODE.ERP_APP_COLOR + '90'} />
+                <Text style={styles.optionText}>Doc scan</Text>
+              </TouchableOpacity>
+          
+              {
+                !isFromInvoiceReader && <> 
+                <TouchableOpacity
+                style={styles.optionCard}
+                onPress={pickFromCamera}
+              >
+                <MaterialIcons name="photo-camera" size={40} color={ERP_COLOR_CODE.ERP_APP_COLOR + '90'} />
+                <Text style={styles.optionText}>{t("title.title11")}</Text>
+              </TouchableOpacity>
 
-          <View style={styles.optionRow}>
-            <TouchableOpacity
-              style={styles.optionCard}
-              onPress={handleScan}
-            >
-              <MaterialIcons name="document-scanner" size={40} color={ERP_COLOR_CODE.ERP_APP_COLOR + '90'} />
-              <Text style={styles.optionText}>Doc scan</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.optionCard}
+                onPress={pickFromGallery}
+              >
+                <MaterialIcons name="photo-library" size={40} color={ERP_COLOR_CODE.ERP_APP_COLOR + '90'} />
+                <Text style={styles.optionText}>{t("title.title12")}</Text>
+              </TouchableOpacity>
+                </>
+              }
+              
+            </View>
+          }
 
-
-            <TouchableOpacity
-              style={styles.optionCard}
-              onPress={pickFromCamera}
-            >
-              <MaterialIcons name="photo-camera" size={40} color={ERP_COLOR_CODE.ERP_APP_COLOR + '90'} />
-              <Text style={styles.optionText}>{t("title.title11")}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.optionCard}
-              onPress={pickFromGallery}
-            >
-              <MaterialIcons name="photo-library" size={40} color={ERP_COLOR_CODE.ERP_APP_COLOR + '90'} />
-              <Text style={styles.optionText}>{t("title.title12")}</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </Modal>
-    </ScrollView>
+    </View>
   );
 };
 

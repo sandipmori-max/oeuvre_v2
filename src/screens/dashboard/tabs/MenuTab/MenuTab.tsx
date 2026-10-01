@@ -690,7 +690,8 @@ const MenuTab = ({
           <TouchableOpacity
             onPress={async () => {
 
-              console.log("item", item)
+              try {
+                console.log("item", item)
               let raw = null;
               try {
                 raw = await dispatch(
@@ -717,6 +718,11 @@ const MenuTab = ({
                   isFromBusinessCard: false,
                   isFromProfile: false,
                 });
+              }else {
+                showToast('New entry page not config...', ERP_COLOR_CODE.ERP_ERROR, 'white')
+              }
+              } catch (error) {
+                
               }
             }}
             style={{

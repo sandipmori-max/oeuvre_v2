@@ -1397,7 +1397,7 @@ export const getDashboardAI = async (dashboardData) => {
       headers: {
         "Content-Type": "application/json",
         Authorization:
-          "Bearer ",
+          "Bearer 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",
       },
       body: JSON.stringify({
         model: "llama-3.1-8b-instant",

@@ -301,7 +301,9 @@ const DetailsBottomSheet = ({ visible, onClose, item, baseLink }: any) => {
                     }}
                   ></TranslatedText>
                 </View>
-                <View
+
+                {
+                  item?.workinghours &&   item?.workinghours  !== '00:00' && <View
                   style={{
                     flexDirection: "row",
                     justifyContent: "space-between",
@@ -317,13 +319,97 @@ const DetailsBottomSheet = ({ visible, onClose, item, baseLink }: any) => {
                   </Text>
                   <TranslatedText
                     numberOfLines={1}
-                    text={getWorkedHours2(item?.intime, item?.outtime)}
+                    text={item?.workinghours}
                     style={{
                       fontWeight: "600",
                       color: theme === "dark" ? "white" : "black",
                     }}
                   ></TranslatedText>
                 </View>
+
+                }
+                 {
+                 item?.latein && item?.latein !== '00:00' &&  <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                     marginVertical: 6,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color:
+                        theme === "dark" ? "white" : ERP_COLOR_CODE.ERP_444,
+                    }}
+                  >
+                    Late in
+                  </Text>
+                  <TranslatedText
+                    numberOfLines={1}
+                    text={item?.latein}
+                    style={{
+                      fontWeight: "600",
+                      color: theme === "dark" ? "white" : "black",
+                    }}
+                  ></TranslatedText>
+                </View>
+                }
+
+                {
+                 item?.earlyout && item?.earlyout !== '00:00' &&  <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                     marginVertical: 6,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color:
+                        theme === "dark" ? "white" : ERP_COLOR_CODE.ERP_444,
+                    }}
+                  >
+                    Early out
+                  </Text>
+                  <TranslatedText
+                    numberOfLines={1}
+                    text={item?.earlyout}
+                    style={{
+                      fontWeight: "600",
+                      color: theme === "dark" ? "white" : "black",
+                    }}
+                  ></TranslatedText>
+                </View>
+                }
+
+                {
+                  item?.overtime && item?.overtime !== '00:00' &&   <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                     marginVertical: 6,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color:
+                        theme === "dark" ? "white" : ERP_COLOR_CODE.ERP_444,
+                    }}
+                  >
+                    Overtime
+                  </Text>
+                  <TranslatedText
+                    numberOfLines={1}
+                    text={item?.overtime}
+                    style={{
+                      fontWeight: "600",
+                      color: theme === "dark" ? "white" : "black",
+                    }}
+                  ></TranslatedText>
+                </View>
+                }
+
+
               </Animated.View>
             </ScrollView>
           ) : (

@@ -253,7 +253,8 @@ const AttendanceForm = ({ setBlockAction, resData, isFromDashboard }: any) => {
       );
     }, 800); // 🔥 300–700ms ideal
   };
-  const handleStatusToggle = async (
+
+  const handleStatusToggle2222 = async (
     setFieldValue: (field: keyof AttendanceFormValues, value: any) => void,
     handleSubmit: () => void,
   ) => {
@@ -283,7 +284,6 @@ const AttendanceForm = ({ setBlockAction, resData, isFromDashboard }: any) => {
       setModalClose(false);
       setAlertVisible(true);
       setIsSettingVisible(true);
-
       setBlockAction(false);
       return;
     }
@@ -427,6 +427,552 @@ const AttendanceForm = ({ setBlockAction, resData, isFromDashboard }: any) => {
 
     getLocationWithRetry();
   };
+
+  const handleStatusToggle = async (
+  setFieldValue: (
+    field: keyof AttendanceFormValues,
+    value: any
+  ) => void,
+  handleSubmit: () => void,
+) => {
+  try {
+    // ============================================================
+    // STEP 1: LOCATION SERVICE CHECK
+    // ============================================================
+    const enabled = await DeviceInfo.isLocationEnabled();
+
+    console.log("📍 Location Service Enabled:", enabled);
+
+    // ❌ LOCATION OFF
+    // Camera must NOT open
+    if (!enabled) {
+      setBlocked(false);
+      setLocationLoading(false);
+      setAttendanceDone(false);
+      setLocationAlertVisible(true);
+      setBlockAction(false);
+
+      console.log("❌ Location is OFF → Camera blocked");
+
+      return;
+    }
+
+    // ✅ LOCATION ON
+    setLocationAlertVisible(false);
+
+    // Prevent multiple clicks
+    if (locationLoading) {
+      console.log("⏳ Location request already running");
+      return;
+    }
+
+    setBlockAction(true);
+
+    // ============================================================
+    // STEP 2: CAMERA + LOCATION PERMISSION
+    // ============================================================
+    const hasPermission = await requestCameraAndLocationPermission();
+
+    console.log("🔐 Camera + Location Permission:", hasPermission);
+
+    if (!hasPermission) {
+      pendingCameraAction.current = {
+        setFieldValue,
+        handleSubmit,
+      };
+
+      setAlertConfig({
+        title: t("errors.permissionRequired"),
+        message: t("errors.cameraLocationPermission"),
+        type: "error",
+      });
+
+      setModalClose(false);
+      setAlertVisible(true);
+      setIsSettingVisible(true);
+      setBlockAction(false);
+
+      return;
+    }
+
+    // ============================================================
+    // STEP 3: PERMISSION OK
+    // ============================================================
+    setBlocked(false);
+
+    /*
+     * IMPORTANT:
+     *
+     * DO NOT wait for GPS here.
+     *
+     * Old flow:
+     *
+     *   Permission
+     *      ↓
+     *   Get Location
+     *      ↓
+     *   WAIT
+     *      ↓
+     *   Open Camera
+     *
+     * New flow:
+     *
+     *   Permission
+     *      ↓
+     *   Open Camera IMMEDIATELY
+     *      +
+     *   Get Location in background
+     */
+
+    setLocationLoading(true);
+
+    // ============================================================
+    // STEP 4: LOCATION FETCH FUNCTION
+    // ============================================================
+    const getLocationWithRetry = async (): Promise<{
+      latitude: number;
+      longitude: number;
+    }> => {
+      try {
+        // ========================================================
+        // ANDROID OLD VERSION
+        // ========================================================
+        const systemVersion = parseInt(
+          DeviceInfo.getSystemVersion(),
+          10
+        );
+
+        if (Platform.OS === "android" && systemVersion <= 9) {
+          console.log("📍 Android <= 9 → JS Geolocation");
+
+          return await new Promise((resolve, reject) => {
+            Geolocation.getCurrentPosition(
+              position => {
+                const {
+                  latitude,
+                  longitude,
+                } = position.coords;
+
+                console.log(
+                  "✅ Android Location:",
+                  latitude,
+                  longitude
+                );
+
+                resolve({
+                  latitude,
+                  longitude,
+                });
+              },
+
+              error => {
+                console.log(
+                  "❌ Android Location Error:",
+                  error
+                );
+
+                reject(error);
+              },
+
+              {
+                enableHighAccuracy: false,
+                timeout: 10000,
+                maximumAge: 10000,
+              }
+            );
+          });
+        }
+
+        // ========================================================
+        // NATIVE LOCATION
+        // ========================================================
+        console.log(
+          "📍 Getting location from Native LocationModule..."
+        );
+
+        const res =
+          await NativeModules.LocationModule.getCurrentLocation();
+
+        console.log(
+          "📍 Native Location Response:",
+          res
+        );
+
+        const {
+          latitude,
+          longitude,
+          accuracy,
+        } = res;
+
+        // Validate coordinates
+        if (
+          latitude === undefined ||
+          latitude === null ||
+          longitude === undefined ||
+          longitude === null
+        ) {
+          throw new Error(
+            "Invalid location coordinates"
+          );
+        }
+
+        // Accuracy check
+        if (accuracy && accuracy > 150) {
+          console.log(
+            "⚠️ Location accuracy too low:",
+            accuracy
+          );
+
+          throw new Error(
+            "Low accuracy location"
+          );
+        }
+
+        console.log(
+          "✅ Native Location:",
+          latitude,
+          longitude,
+          "Accuracy:",
+          accuracy
+        );
+
+        return {
+          latitude,
+          longitude,
+        };
+      } catch (nativeError) {
+        // ========================================================
+        // FALLBACK → JS GEOLOCATION
+        // ========================================================
+        console.log(
+          "⚠️ Native location failed → JS fallback",
+          nativeError
+        );
+
+        return await new Promise((resolve, reject) => {
+          Geolocation.getCurrentPosition(
+            position => {
+              const {
+                latitude,
+                longitude,
+              } = position.coords;
+
+              console.log(
+                "✅ JS Fallback Location:",
+                latitude,
+                longitude
+              );
+
+              resolve({
+                latitude,
+                longitude,
+              });
+            },
+
+            error => {
+              console.log(
+                "❌ JS Geolocation Error:",
+                error
+              );
+
+              reject(error);
+            },
+
+            {
+              enableHighAccuracy: false,
+              timeout: 10000,
+              maximumAge: 10000,
+            }
+          );
+        });
+      }
+    };
+
+    // ============================================================
+    // STEP 5: START LOCATION IN BACKGROUND
+    // ============================================================
+    const locationPromise = getLocationWithRetry();
+
+    // ============================================================
+    // STEP 6: OPEN CAMERA IMMEDIATELY
+    // ============================================================
+    console.log(
+      "📸 Opening camera immediately..."
+    );
+
+    openCamera22(
+      setFieldValue,
+      handleSubmit,
+      locationPromise
+    );
+
+    // ============================================================
+    // STEP 7: LOCATION CAN COMPLETE WHILE CAMERA IS OPEN
+    // ============================================================
+    try {
+      const {
+        latitude,
+        longitude,
+      } = await locationPromise;
+
+      console.log(
+        "📍 Location ready:",
+        latitude,
+        longitude
+      );
+
+      // Update Formik
+      setUserLocation({
+        latitude,
+        longitude,
+      });
+
+      setFieldValue(
+        "latitude",
+        String(latitude)
+      );
+
+      setFieldValue(
+        "longitude",
+        String(longitude)
+      );
+
+      setLocationLoading(false);
+
+      console.log(
+        "✅ Location saved in Formik"
+      );
+    } catch (locationError: any) {
+      console.log(
+        "❌ Final location error:",
+        locationError
+      );
+
+      setLocationLoading(false);
+
+      let message = "";
+
+      switch (locationError?.code) {
+        case 1:
+          message = "Location permission denied";
+          break;
+
+        case 2:
+          message =
+            "Location unavailable (GPS/Network issue)";
+          break;
+
+        case 3:
+          message =
+            "Location timeout (slow network)";
+          break;
+
+        default:
+          message =
+            locationError?.message ||
+            t("msg.msg5");
+      }
+
+      setAlertConfig({
+        title: t("errors.locationError"),
+        message,
+        type: "error",
+      });
+
+      setAlertVisible(true);
+    }
+  } catch (error) {
+    console.log(
+      "❌ handleStatusToggle ERROR:",
+      error
+    );
+
+    setLocationLoading(false);
+    setBlockAction(false);
+
+    setAlertConfig({
+      title: t("errors.locationError"),
+      message: t("msg.msg5"),
+      type: "error",
+    });
+
+    setAlertVisible(true);
+  }
+};
+
+
+
+const   openCamera22 = (
+  setFieldValue: (
+    field: keyof AttendanceFormValues,
+    value: any
+  ) => void,
+  handleSubmit: () => void,
+  locationPromise?: Promise<{
+    latitude: number;
+    longitude: number;
+  }>
+) => {
+  console.log("📸 FaceCameraScreen → OPEN");
+
+  navigation.navigate("FaceCameraScreen", {
+    onCapture: async (photoPath: string) => {
+      try {
+        console.log(
+          "📸 Photo captured:",
+          photoPath
+        );
+
+        setLocationLoading(true);
+        setBlockAction(true);
+
+        // ========================================================
+        // WAIT FOR LOCATION BEFORE SUBMIT
+        // ========================================================
+        let latitude: number | null = null;
+        let longitude: number | null = null;
+
+        if (locationPromise) {
+          try {
+            const location =
+              await locationPromise;
+
+            latitude = location.latitude;
+            longitude = location.longitude;
+
+            console.log(
+              "📍 Location after capture:",
+              latitude,
+              longitude
+            );
+
+            setUserLocation({
+              latitude,
+              longitude,
+            });
+
+            setFieldValue(
+              "latitude",
+              String(latitude)
+            );
+
+            setFieldValue(
+              "longitude",
+              String(longitude)
+            );
+          } catch (locationError) {
+            console.log(
+              "❌ Location unavailable after capture:",
+              locationError
+            );
+
+            setLocationLoading(false);
+            setBlockAction(false);
+
+            setAlertConfig({
+              title: t("errors.locationError"),
+              message: t("msg.msg5"),
+              type: "error",
+            });
+
+            setAlertVisible(true);
+
+            return;
+          }
+        }
+
+        // ========================================================
+        // PHOTO VALIDATION
+        // ========================================================
+        if (!photoPath) {
+          console.log(
+            "❌ No photo received"
+          );
+
+          setLocationLoading(false);
+          setBlockAction(false);
+
+          return;
+        }
+
+        // ========================================================
+        // PHOTO PROCESSING
+        // ========================================================
+        const photoUri =
+          photoPath.startsWith("file://")
+            ? photoPath
+            : `file://${photoPath}`;
+
+        const compressedPhoto =
+          await ImageResizer.createResizedImage(
+            photoPath,
+            600,
+            600,
+            "JPEG",
+            60,
+            0
+          );
+
+        const base64 =
+          await RNFS.readFile(
+            compressedPhoto.uri,
+            "base64"
+          );
+
+        if (!base64) {
+          console.log(
+            "❌ Base64 conversion failed"
+          );
+
+          setLocationLoading(false);
+          setBlockAction(false);
+
+          return;
+        }
+
+        // ========================================================
+        // SET IMAGE
+        // ========================================================
+        setFieldValue(
+          "imageBase64",
+          `${
+            resData?.success === 1 ||
+            resData?.success === "1"
+              ? "punchOut.jpeg"
+              : "punchIn.jpeg"
+          }; data:image/jpeg;base64,${base64}`
+        );
+
+        setStatusImage(photoUri);
+
+        console.log(
+          "✅ Photo + Location ready → Submit"
+        );
+
+        setLocationLoading(false);
+
+        // ========================================================
+        // SUBMIT
+        // ========================================================
+        setTimeout(() => {
+          handleSubmit();
+        }, 300);
+      } catch (error) {
+        console.log(
+          "❌ Camera capture processing error:",
+          error
+        );
+
+        setLocationLoading(false);
+        setBlockAction(false);
+      }
+    },
+
+    isFromDashboard: isFromDashboard,
+    isBackActive: false,
+    isFromAttendance: true,
+  });
+};
 
   const formatName = (name = "") =>
     name

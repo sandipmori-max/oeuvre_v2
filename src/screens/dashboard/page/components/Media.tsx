@@ -32,7 +32,7 @@ import LableInfo from "./LableInfo";
 import { useNavigation } from "@react-navigation/native";
 import DeviceInfo from "react-native-device-info";
 import { downloadAndShare } from "../../../../utils/helpers";
- 
+
 const Media = ({
   isValidate,
   item,
@@ -41,6 +41,8 @@ const Media = ({
   baseLink,
   isFromNew,
   errors,
+  isTextScan
+
 }: any) => {
   const navigation = useNavigation();
   const { t } = useTranslation();
@@ -61,9 +63,9 @@ const Media = ({
     message: "",
     type: "info" as "error" | "success" | "info",
   });
- const isIpad =
-   ( Platform.OS === "ios" && Platform.isPad) || DeviceInfo.isTablet() || Platform.isTV;
-   
+  const isIpad =
+    (Platform.OS === "ios" && Platform.isPad) || DeviceInfo.isTablet() || Platform.isTV;
+
   console.log("Media Rendered with imageUri:", imageUri, "and errors:", errors);
   const scale = useRef(new Animated.Value(1)).current;
   const translateX = useRef(new Animated.Value(0)).current;
@@ -78,12 +80,12 @@ const Media = ({
   const getImageUri = (type: "small" | "large") => {
     const base =
       imageUri || `${baseLink}fileupload/1/${infoData?.tableName}/${infoData?.id}/${type === "small" ? `${item?.text}` : `${item?.text}`}`;
-   
-      console.log(`${base}?cb=${cacheBuster}`)
-      return `${base}?cb=${cacheBuster}`;
+
+    console.log(`${base}?cb=${cacheBuster}`)
+    return `${base}?cb=${cacheBuster}`;
   };
 
- 
+
   // -------------------- Permissions --------------------
   const requestPermission = async (
     type: "camera" | "gallery",
@@ -276,7 +278,7 @@ const Media = ({
   // },[])
   // -------------------- Render Media Options --------------------
 
- 
+
 
 
   const renderMedia = () => {
@@ -286,7 +288,7 @@ const Media = ({
           text: "Camera",
           icon: "photo-camera",
 
-           onPress: async () => {
+          onPress: async () => {
             try {
               console.log("========== CAMERA START ==========");
 
@@ -458,7 +460,8 @@ const Media = ({
           },
         },
       ];
-    } else if (item?.ctltype === "IMAGE" && !item?.field?.startsWith("gallary_camera_")) {
+    }
+    else if (item?.ctltype === "IMAGE" && !item?.field?.startsWith("gallary_camera_")) {
       return [
         {
           text: "Camera",
@@ -577,6 +580,37 @@ const Media = ({
             }
           }
         },
+        {
+          text: "Scan Text",
+          icon: "document-scanner",
+
+          onPress: async () => {
+
+            try {
+
+              const granted =
+                await requestPermission("camera");
+
+              if (!granted) {
+                return;
+              }
+
+
+              navigation.navigate(
+                "TextScannerScreen" as never
+              );
+
+            } catch (error) {
+
+              console.log(
+                "Text Scanner Error:",
+                error
+              );
+
+            }
+
+          },
+        },
       ];
     } else {
       return [];
@@ -642,11 +676,11 @@ const Media = ({
         style={[
           styles.imageWrapper,
           !imageExists && {
-            width:   !isLandscape &&isIpad ? "50%" : "100%",
+            width: !isLandscape && isIpad ? "50%" : "100%",
             borderWidth: 1.5,
             borderRadius: 10,
             borderColor:
-              theme === "dark" ? "#fff" : ERP_COLOR_CODE.ERP_APP_COLOR ,
+              theme === "dark" ? "#fff" : ERP_COLOR_CODE.ERP_APP_COLOR,
             marginBottom: 8,
             borderStyle: "dashed",
             backgroundColor: theme === "dark" ? "#000" : "#f8f9ff",
@@ -720,7 +754,7 @@ const Media = ({
             onPress={handleChooseImage}
             style={[
               styles.editBtn,
-             (isIpad ||  isLandscape) && {
+              (isIpad || isLandscape) && {
                 left: 206,
               },
               theme === "dark" && {
@@ -774,11 +808,11 @@ const Media = ({
               style={[
                 styles.fullscreenModalContent,
                 {
-                  width:  (isIpad || isLandscape) ? "50%" : "100%",
+                  width: (isIpad || isLandscape) ? "50%" : "100%",
                 },
               ]}
             >
-            <TouchableOpacity
+              <TouchableOpacity
                 style={styles.closeBtnShare}
                 onPress={() => {
                   downloadAndShare(getImageUri("large"), "image/jpeg");
@@ -874,7 +908,7 @@ const Media = ({
                   backgroundColor: "black",
                 },
                 {
-                  width:  (isIpad || isLandscape) ? "50%" : "100%",
+                  width: (isIpad || isLandscape) ? "50%" : "100%",
                 },
               ]}
             >
@@ -1066,7 +1100,7 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   closeBtnShare: {
-position: "absolute",
+    position: "absolute",
     top: 80,
     right: 80,
     zIndex: 20,

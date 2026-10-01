@@ -169,7 +169,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
       >
         {({ handleChange, handleBlur, values, errors, touched, handleSubmit }) => (
           <>
-            {['user', 'password'].map((field, index) => (
+            {[ 'user', 'password'].map((field, index) => (
               <Animated.View
                 key={field}
                 style={{

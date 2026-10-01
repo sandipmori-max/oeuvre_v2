@@ -52,38 +52,87 @@ class DevERPService {
     return this.getAuth();
   }
 
-  private async apiCall<T>(endpoint: string, payload: any): Promise<any> {
+  // private async apiCall<T>(endpoint: string, payload: any): Promise<any> {
+  //   try {
+  //     const isConnected = await this.checkNetwork();
+
+  //     if (!isConnected) {
+
+  //       return;
+  //     }
+
+  //     await this.ensureAuthToken();
+
+  //     const response = await apiClient.post<T>(
+  //       `${this.link}${endpoint}`,
+  //       payload,
+  //     );
+  //     if (
+  //       (response as any).data?.success === 0 &&
+  //       (response as any).data?.message?.includes("Invalid Token")
+  //     ) {
+  //       await this.ensureAuthToken(true);
+  //       const retryResponse = await apiClient.post<T>(
+  //         `${this.link}${endpoint}`,
+  //         {
+  //           ...payload,
+  //           token: this.token,
+  //         },
+  //       );
+  //       return retryResponse.data;
+  //     }
+
+  //     return response.data;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
+
+  private async apiCall<T>(
+    endpoint: string,
+    payload: any,
+    isRetry = false,
+  ): Promise<any> {
     try {
       const isConnected = await this.checkNetwork();
 
       if (!isConnected) {
-        
-        return;
+        throw {
+          message:
+            "Please check your network and try again. You can tap Refresh or close and reopen the app",
+          statusCode: 0,
+        };
       }
 
+      // Ensure valid token before API call
       await this.ensureAuthToken();
 
       const response = await apiClient.post<T>(
         `${this.link}${endpoint}`,
-        payload,
+        {
+          ...payload,
+          token: this.token,
+        },
       );
-      if (
-        (response as any).data?.success === 0 &&
-        (response as any).data?.message?.includes("Invalid Token")
-      ) {
-        await this.ensureAuthToken(true);
-        const retryResponse = await apiClient.post<T>(
-          `${this.link}${endpoint}`,
-          {
-            ...payload,
-            token: this.token,
-          },
-        );
-        return retryResponse.data;
-      }
 
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
+      // Retry only once if token is invalid
+      const errorMessage = error?.message || error?.data?.message;
+      if (
+        !isRetry &&
+        (errorMessage === "Invalid Token" ||
+          errorMessage === "Token Expire")
+      ) {
+        try {
+          console.log("Refreshing auth token...");
+          await this.ensureAuthToken(true);
+          return await this.apiCall(endpoint, payload, true);
+        } catch (refreshError) {
+          throw refreshError;
+        }
+      }
+
       throw error;
     }
   }
@@ -92,7 +141,7 @@ class DevERPService {
     const isConnected = await this.checkNetwork();
 
     if (!isConnected) {
-      
+
       return;
     }
 
@@ -139,10 +188,10 @@ class DevERPService {
     console.error(" 👈 👈 👈 Login credentials received: 👈👈👈👈 ---- -- - -- - - - - -", credentials); // 👈 added log
     const isConnected = await this.checkNetwork();
 
-      if (!isConnected) {
-        
-        return;
-      }
+    if (!isConnected) {
+
+      return;
+    }
     const app_id = generateGUID();
     await AsyncStorage.setItem("appid", app_id);
     this.appid = app_id;
@@ -171,10 +220,10 @@ class DevERPService {
 
   async getAuth(): Promise<any> {
     const isConnected = await this.checkNetwork();
-      if (!isConnected) {
-         
-        return;
-      }
+    if (!isConnected) {
+
+      return;
+    }
     await new Promise(res => setTimeout(res, 600));
     const tokenData: TokenRequest = { appid: this.appid, device: this.device };
     console.log("tokenData", tokenData)

@@ -64,6 +64,82 @@ import GroupFilterModal from "./components/GroupFilterModal";
 import SortingFilterModal from "./components/SortingFilterModal";
 import DeviceInfo from "react-native-device-info"; 
 
+const SearchInput = React.memo(
+  ({
+    value,
+    onChangeText,
+    onClear,
+    theme,
+    isIpad,
+    isLandscape,
+  }: {
+    value: string;
+    onChangeText: (text: string) => void;
+    onClear: () => void;
+    theme: string;
+    isIpad: boolean;
+    isLandscape: boolean;
+  }) => {
+    return (
+      <View
+        style={[
+          styles.searchInputContainer,
+          theme === "dark" && {
+            backgroundColor: "black",
+          },
+          {
+            width: isIpad
+              ? isLandscape
+                ? "89%"
+                : "86%"
+              : "86%",
+          },
+        ]}
+      >
+        <MaterialIcons
+          size={24}
+          name="search"
+          color={theme === "dark" ? "white" : "black"}
+        />
+
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "space-between",
+            flexDirection: "row",
+          }}
+        >
+          <TextInput
+            style={{
+              flex: 1,
+              backgroundColor: "#fff",
+              borderRadius: 8,
+              paddingHorizontal: 12,
+              height: 36,
+            }}
+            placeholder="Search in list..."
+            value={value}
+            onChangeText={onChangeText}
+            placeholderTextColor={ERP_COLOR_CODE.ERP_6C757D}
+            autoCorrect={false}
+            autoCapitalize="none"
+            underlineColorAndroid="transparent"
+          />
+
+          {value.length > 0 && (
+            <TouchableOpacity
+              onPress={onClear}
+              style={styles.clearButton}
+            >
+              <Text style={styles.clearButtonText}>✕</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    );
+  },
+);
+
 const ListScreen = () => {
   const route = useRoute<RouteProp<ListRouteParams, "List">>();
   const { item, parsedConfig } = route?.params;
@@ -340,7 +416,7 @@ const ListScreen = () => {
             />
           }
           {
-            isTableView && <ERPIcon
+           (parsedConfig?.newentry === 1 || parsedConfig?.newentry === "1") && isTableView && <ERPIcon
               name={'add'}
               onPress={() => {
                 setTapLoader(true);
@@ -371,7 +447,8 @@ const ListScreen = () => {
     groupModalVisible1,
     groupModalVisible2,
     primaryGroupKey,
-    secondaryGroupKey
+    secondaryGroupKey,
+    parsedConfig
   ]);
 
   const handleSort = (key: string) => {
@@ -530,9 +607,6 @@ const ListScreen = () => {
     }
   }, [navigation, parsedConfig]);
 
-
-
-
   const getCurrentMonthRange = () => {
     const now = new Date();
 
@@ -585,59 +659,135 @@ const ListScreen = () => {
     }
   };
 
-  const debouncedSearch = useCallback(
-    useMemo(() => {
-      let timeoutId: NodeJS.Timeout;
+  // const debouncedSearch = useCallback(
+  //   useMemo(() => {
+  //     let timeoutId: NodeJS.Timeout;
 
-      return (query: string, data: any[]) => {
-        clearTimeout(timeoutId);
+  //     return (query: string, data: any[]) => {
+  //       clearTimeout(timeoutId);
 
-        timeoutId = setTimeout(() => {
-          const trimmedQuery = query.trim();
+  //       timeoutId = setTimeout(() => {
+  //         const trimmedQuery = query.trim();
 
-          if (trimmedQuery === "") {
-            setFilteredData(data);
-            return;
+  //         if (trimmedQuery === "") {
+  //           setFilteredData(data);
+  //           return;
+  //         }
+
+  //         const keySearchMatch = trimmedQuery?.match(/^(\w+):(.+)$/);
+  //         let filtered;
+
+  //         if (keySearchMatch) {
+  //           const [, key, value] = keySearchMatch;
+  //           const lowerValue = value.trim().toLowerCase();
+
+  //           filtered = data?.filter((item) => {
+  //             const fieldValue = item[key];
+  //             if (!fieldValue) return false;
+
+  //             const stringValue =
+  //               typeof fieldValue === "object"
+  //                 ? JSON.stringify(fieldValue)
+  //                 : String(fieldValue);
+
+  //             return stringValue.toLowerCase().includes(lowerValue);
+  //           });
+  //         } else {
+  //           filtered = data?.filter((item) => {
+  //             const allValues = Object.values(item)
+  //               .map((val) => {
+  //                 if (typeof val === "object" && val !== null)
+  //                   return JSON.stringify(val);
+  //                 if (val === null || val === undefined) return "";
+  //                 return String(val);
+  //               })
+  //               .join(" ")
+  //               .toLowerCase();
+  //             return allValues?.includes(trimmedQuery?.toLowerCase());
+  //           });
+  //         }
+  //         setFilteredData(filtered);
+  //       }, 300);
+  //     };
+  //   }, []),
+  //   [],
+  // );
+
+
+  const searchTimeoutRef = useRef<any>(null);
+
+const debouncedSearch = useCallback(
+  (query: string, data: any[]) => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      const trimmedQuery = query.trim();
+
+      if (trimmedQuery === "") {
+        setFilteredData(data);
+        return;
+      }
+
+      const keySearchMatch = trimmedQuery.match(/^(\w+):(.+)$/);
+
+      let filtered;
+
+      if (keySearchMatch) {
+        const [, key, value] = keySearchMatch;
+        const lowerValue = value.trim().toLowerCase();
+
+        filtered = data.filter((item) => {
+          const fieldValue = item?.[key];
+
+          if (!fieldValue) {
+            return false;
           }
 
-          const keySearchMatch = trimmedQuery?.match(/^(\w+):(.+)$/);
-          let filtered;
+          const stringValue =
+            typeof fieldValue === "object"
+              ? JSON.stringify(fieldValue)
+              : String(fieldValue);
 
-          if (keySearchMatch) {
-            const [, key, value] = keySearchMatch;
-            const lowerValue = value.trim().toLowerCase();
+          return stringValue.toLowerCase().includes(lowerValue);
+        });
+      } else {
+        const lowerQuery = trimmedQuery.toLowerCase();
 
-            filtered = data?.filter((item) => {
-              const fieldValue = item[key];
-              if (!fieldValue) return false;
+        filtered = data.filter((item) => {
+          const allValues = Object.values(item)
+            .map((val) => {
+              if (typeof val === "object" && val !== null) {
+                return JSON.stringify(val);
+              }
 
-              const stringValue =
-                typeof fieldValue === "object"
-                  ? JSON.stringify(fieldValue)
-                  : String(fieldValue);
+              if (val === null || val === undefined) {
+                return "";
+              }
 
-              return stringValue.toLowerCase().includes(lowerValue);
-            });
-          } else {
-            filtered = data?.filter((item) => {
-              const allValues = Object.values(item)
-                .map((val) => {
-                  if (typeof val === "object" && val !== null)
-                    return JSON.stringify(val);
-                  if (val === null || val === undefined) return "";
-                  return String(val);
-                })
-                .join(" ")
-                .toLowerCase();
-              return allValues?.includes(trimmedQuery?.toLowerCase());
-            });
-          }
-          setFilteredData(filtered);
-        }, 300);
-      };
-    }, []),
-    [],
-  );
+              return String(val);
+            })
+            .join(" ")
+            .toLowerCase();
+
+          return allValues.includes(lowerQuery);
+        });
+      }
+
+      setFilteredData(filtered);
+    }, 300);
+  },
+  [],
+);
+
+useEffect(() => {
+  return () => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+  };
+}, []);
 
   const onRefresh = async () => {
     try {
@@ -653,17 +803,35 @@ const ListScreen = () => {
     }
   };
 
-  const handleSearchChange = (text: string) => {
-    setSelectedStatus('All')
+  // const handleSearchChange = (text: string) => {
+  //   setSelectedStatus('All')
+  //   setSearchQuery(text);
+  //   debouncedSearch(text, listData);
+  // };
+
+  const handleSearchChange = useCallback(
+  (text: string) => {
     setSearchQuery(text);
+
+    if (selectedStatus !== "All") {
+      setSelectedStatus("All");
+    }
+
     debouncedSearch(text, listData);
-  };
+  },
+  [debouncedSearch, listData, selectedStatus],
+);
 
-  const clearSearch = () => {
-    setSearchQuery("");
-    setFilteredData(listData);
+  // const clearSearch = () => {
+  //   setSearchQuery("");
+  //   setFilteredData(listData);
 
-  };
+  // };
+
+  const clearSearch = useCallback(() => {
+  setSearchQuery("");
+  setFilteredData(listData);
+}, [listData]);
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
      setSelectedStatus("All")
@@ -857,9 +1025,8 @@ const ListScreen = () => {
     setSortingKey("")
     setSortConfig(null)
     // setIsFilterVisible(false);
-    setSearchQuery("");
-
-    if (parsedConfig?.editentry === 1 || parsedConfig?.editentry === "1") {
+    setSearchQuery(""); 
+    if (parsedConfig?.newentry === 1 || parsedConfig?.newentry === "1") {
       navigation.navigate("Page", {
         item,
         title: page,
@@ -1047,7 +1214,7 @@ const ListScreen = () => {
               <View style={{ flexDirection: "row" }}>
                 <View style={{ width: "40%", overflow: 'hidden' }}>
                   <View style={styles.searchContainer}>
-                    <View
+                    {/* <View
                       style={[
                         styles.searchInputContainer,
                         theme === "dark" && {
@@ -1088,7 +1255,16 @@ const ListScreen = () => {
                           </TouchableOpacity>
                         )}
                       </View>
-                    </View>
+                    </View> */}
+
+                    <SearchInput
+                        value={searchQuery}
+                        onChangeText={handleSearchChange}
+                        onClear={clearSearch}
+                        theme={theme}
+                        isIpad={isIpad}
+                        isLandscape={isLandscape}
+                      />
                     {
                       <View style={{
                         borderRadius: 2,
@@ -1220,19 +1396,7 @@ const ListScreen = () => {
                                         i.map((item) => item.value).join(","),
                                       ),
                                     );
-                                    // if (item?.title === "Branch") {
-                                    //   dispatch(
-                                    //     setActiveDashboardBranchId(
-                                    //       i?.value?.toString(),
-                                    //     ),
-                                    //   );
-                                    //   dispatch(setActiveDashboardBranch(i?.name));
-                                    // } else {
-                                    //   dispatch(setActiveDashboardType(i?.name));
-                                    //   dispatch(
-                                    //     setActiveDashboardTypeId(i?.value?.toString()),
-                                    //   );
-                                    // }
+                                    
                                   }}
                                   options={[]}
                                   item={item}
@@ -1282,7 +1446,7 @@ const ListScreen = () => {
               }
               <View style={[styles.searchContainer,
               ]}>
-                <View
+                {/* <View
                   style={[
                     styles.searchInputContainer,
                     theme === "dark" && {
@@ -1321,7 +1485,15 @@ const ListScreen = () => {
                     )}
                   </View>
 
-                </View>
+                </View> */}
+                <SearchInput
+                    value={searchQuery}
+                    onChangeText={handleSearchChange}
+                    onClear={clearSearch}
+                    theme={theme}
+                    isIpad={isIpad}
+                    isLandscape={isLandscape}
+                  />
                 {
                   <View style={{
                     borderRadius: 2,
@@ -1432,19 +1604,7 @@ const ListScreen = () => {
                                   i.map((item) => item.value).join(","),
                                 ),
                               );
-                              // if (item?.title === "Branch") {
-                              //   dispatch(
-                              //     setActiveDashboardBranchId(
-                              //       i?.value?.toString(),
-                              //     ),
-                              //   );
-                              //   dispatch(setActiveDashboardBranch(i?.name));
-                              // } else {
-                              //   dispatch(setActiveDashboardType(i?.name));
-                              //   dispatch(
-                              //     setActiveDashboardTypeId(i?.value?.toString()),
-                              //   );
-                              // }
+                             
                             }}
                             options={[]}
                             item={item}
@@ -1659,7 +1819,7 @@ const ListScreen = () => {
                     totalQty={totalQty}
                     isFromBusinessCard={isFromBusinessCard}
                     pageParamsName={pageParamsName}
-                    handleItemPressed={handleItemPressed}
+                    // handleItemPressed={handleItemPressed}
                     parsedConfig={parsedConfig}
                     pageName={pageName}
                     setIsFilterVisible={setIsFilterVisible}
@@ -1682,7 +1842,7 @@ const ListScreen = () => {
                     totalQty={totalQty}
                     isFromBusinessCard={isFromBusinessCard}
                     pageParamsName={pageParamsName}
-                    handleItemPressed={handleItemPressed}
+                    // handleItemPressed={handleItemPressed}
                     parsedConfig={parsedConfig}
                     pageName={pageName}
                     setIsFilterVisible={setIsFilterVisible}
