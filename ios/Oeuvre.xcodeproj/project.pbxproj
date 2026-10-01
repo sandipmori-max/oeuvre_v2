@@ -14,6 +14,7 @@
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		B35EAE6E6BBA861CA651C21A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		DA73448D2EB886B1002F7399 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = DA73448C2EB886B1002F7399 /* GoogleService-Info.plist */; };
+		DA837A28306E767100925970 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA837A27306E767100925970 /* SceneDelegate.swift */; };
 		DAAFE8EA2F1BACF200F00D76 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAAFE8E92F1BACF200F00D76 /* LocationService.swift */; };
 		DAAFE8EC2F1BAD0500F00D76 /* LocationModule.m in Sources */ = {isa = PBXBuildFile; fileRef = DAAFE8EB2F1BAD0500F00D76 /* LocationModule.m */; };
 		DAB5A1882F05534700923390 /* LocationModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAB5A1872F05534500923390 /* LocationModule.swift */; };
@@ -37,6 +38,7 @@
 		BE81B34BB904C53395BC93E4 /* Pods-Oeuvre.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Oeuvre.debug.xcconfig"; path = "Target Support Files/Pods-Oeuvre/Pods-Oeuvre.debug.xcconfig"; sourceTree = "<group>"; };
 		C7899459CCB842D0AD5CF70D /* Handlee-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Handlee-Regular.ttf"; path = "../assets/fonts/Handlee-Regular.ttf"; sourceTree = "<group>"; };
 		DA73448C2EB886B1002F7399 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		DA837A27306E767100925970 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		DAAFE8E92F1BACF200F00D76 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
 		DAAFE8EB2F1BAD0500F00D76 /* LocationModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LocationModule.m; sourceTree = "<group>"; };
 		DAAFE8ED2F1BAD0900F00D76 /* Oeuvre-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Oeuvre-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -69,6 +71,7 @@
 		13B07FAE1A68108700A75B9A /* Oeuvre */ = {
 			isa = PBXGroup;
 			children = (
+				DA837A27306E767100925970 /* SceneDelegate.swift */,
 				DAB5FD7A2F9B84C1007D0EDD /* DocumentScanner.mm */,
 				DAB5FD792F9B84B6007D0EDD /* DocumentScanner.h */,
 				DACC1D5C2F33482B00EBAA0E /* OrientationModule.m */,
@@ -327,6 +330,7 @@
 				DAAFE8EC2F1BAD0500F00D76 /* LocationModule.m in Sources */,
 				DACC1D5D2F33482B00EBAA0E /* OrientationModule.m in Sources */,
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				DA837A28306E767100925970 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -342,7 +346,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 9HDP6J823K;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Oeuvre/Info.plist;
@@ -353,7 +357,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.5.2;
+				MARKETING_VERSION = 1.5.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -381,7 +385,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 9HDP6J823K;
 				INFOPLIST_FILE = Oeuvre/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Oeuvre;
@@ -391,7 +395,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.5.2;
+				MARKETING_VERSION = 1.5.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

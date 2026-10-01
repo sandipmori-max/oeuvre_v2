@@ -21,8 +21,8 @@ android {
         applicationId "com.oeuvre"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 52
-        versionName "1.5.2"
+        versionCode 56
+        versionName "1.5.6"
     }
     signingConfigs {
         debug {

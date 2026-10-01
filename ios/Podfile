@@ -5,11 +5,13 @@ platform :ios, '16.0'
 prepare_react_native_project!
 
 use_frameworks! :linkage => :static
+
 use_modular_headers!
 
 # ============================================================
-# Resolve React Native / Permissions scripts
+# Helper to load React Native / React Native Permissions scripts
 # ============================================================
+
 def node_require(script)
   require Pod::Executable.execute_command(
     'node',
@@ -21,12 +23,17 @@ def node_require(script)
   ).strip
 end
 
+# React Native
 node_require('react-native/scripts/react_native_pods.rb')
+
+# React Native Permissions
 node_require('react-native-permissions/scripts/setup.rb')
+
 
 # ============================================================
 # Permissions
 # ============================================================
+
 setup_permissions([
   'Camera',
   'Microphone',
@@ -38,9 +45,11 @@ setup_permissions([
   'MediaLibrary'
 ])
 
+
 # ============================================================
-# Oeuvre Target
+# Oeuvre
 # ============================================================
+
 target 'Oeuvre' do
 
   config = use_native_modules!
@@ -51,37 +60,56 @@ target 'Oeuvre' do
     :fabric_enabled => false
   )
 
+
   # ==========================================================
-  # Google ML Kit
+  # Google MLKit Text Recognition
   # ==========================================================
+
   pod 'GoogleMLKit/TextRecognitionChinese', '8.0.0'
+
 
   # ==========================================================
   # POST INSTALL
   # ==========================================================
+
   post_install do |installer|
 
-    # React Native post install
     react_native_post_install(
       installer,
       config[:reactNativePath]
     )
 
-    # ========================================================
-    # Fix deployment target for ALL Pods
-    # ========================================================
-    installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |config|
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
-      end
-    end
 
     # ========================================================
-    # fmt 11.0.2 + Xcode 26 compatibility fix
+    # Force iOS Deployment Target 16.0 for ALL Pods
+    # ========================================================
+
+    installer.pods_project.targets.each do |target|
+
+      target.build_configurations.each do |build_config|
+
+        build_config.build_settings[
+          'IPHONEOS_DEPLOYMENT_TARGET'
+        ] = '16.0'
+
+      end
+
+    end
+
+
+    # ========================================================
+    # FIX:
     #
-    # Fix:
+    # fmt + Apple Clang 21 / Xcode 26.4+
+    #
+    # Error:
+    #
     # Call to consteval function
-    # 'fmt::basic_format_string...' is not a constant expression
+    # 'fmt::basic_format_string<...>'
+    # is not a constant expression
+    #
+    # This patches fmt/base.h so Apple Clang does not use
+    # consteval for FMT_STRING.
     # ========================================================
 
     fmt_base = File.join(
@@ -95,27 +123,97 @@ target 'Oeuvre' do
 
       content = File.read(fmt_base)
 
-      patched_content = content.gsub(
-        /^#\s*define FMT_USE_CONSTEVAL 1$/,
-        '# define FMT_USE_CONSTEVAL 0'
+      # ------------------------------------------------------
+      # Primary fmt workaround
+      #
+      # Original:
+      #
+      # #elif defined(__apple_build_version__) &&
+      #       __apple_build_version__ < 14000029L
+      #
+      # Changed to:
+      #
+      # #elif defined(__apple_build_version__)
+      # ------------------------------------------------------
+
+      patched = content.gsub(
+        '#elif defined(__apple_build_version__) && __apple_build_version__ < 14000029L',
+        '#elif defined(__apple_build_version__)'
       )
 
-      if patched_content != content
+      if patched != content
 
         File.chmod(0644, fmt_base)
-        File.write(fmt_base, patched_content)
 
-        puts "✅ Applied fmt 11.0.2 Xcode 26 compatibility fix"
-
-      else
-
-        puts "ℹ️ fmt consteval already patched or pattern not found"
+        File.write(
+          fmt_base,
+          patched
+        )
 
       end
 
-    else
+    end
 
-      puts "⚠️ fmt/base.h not found"
+
+    # ========================================================
+    # Additional protection for fmt / RCT-Folly
+    #
+    # Keeps C++ standard at C++17 and explicitly disables
+    # consteval for these targets.
+    # ========================================================
+
+    installer.pods_project.targets.each do |target|
+
+      if target.name == 'fmt' || target.name == 'RCT-Folly'
+
+        target.build_configurations.each do |build_config|
+
+          build_config.build_settings[
+            'CLANG_CXX_LANGUAGE_STANDARD'
+          ] = 'c++17'
+
+
+          definitions =
+            build_config.build_settings[
+              'GCC_PREPROCESSOR_DEFINITIONS'
+            ]
+
+
+          if definitions.nil?
+
+            definitions = [
+              '$(inherited)'
+            ]
+
+          elsif definitions.is_a?(String)
+
+            definitions = [
+              definitions
+            ]
+
+          else
+
+            definitions = definitions.dup
+
+          end
+
+
+          unless definitions.include?(
+            'FMT_USE_CONSTEVAL=0'
+          )
+
+            definitions << 'FMT_USE_CONSTEVAL=0'
+
+          end
+
+
+          build_config.build_settings[
+            'GCC_PREPROCESSOR_DEFINITIONS'
+          ] = definitions
+
+        end
+
+      end
 
     end
 
