@@ -98,13 +98,7 @@
       "platform" : "ios",
       "scale" : "2x",
       "size" : "83.5x83.5"
-    },
-    {
-      "filename" : "iTunesArtwork-1024.png",
-      "idiom" : "universal",
-      "platform" : "ios",
-      "size" : "1024x1024"
-    },
+    }, 
     {
       "filename" : "icon-16x16.png",
       "idiom" : "mac",
@@ -159,12 +153,7 @@
       "scale" : "1x",
       "size" : "512x512"
     },
-    {
-      "filename" : "iTunesArtwork-1024.png",
-      "idiom" : "mac",
-      "scale" : "2x",
-      "size" : "512x512"
-    },
+   
     {
       "idiom" : "universal",
       "platform" : "watchos",
@@ -285,13 +274,8 @@
       "platform" : "watchos",
       "scale" : "2x",
       "size" : "129x129"
-    },
-    {
-      "filename" : "iTunesArtwork-1024.png",
-      "idiom" : "universal",
-      "platform" : "watchos",
-      "size" : "1024x1024"
     }
+     
   ],
   "info" : {
     "author" : "xcode",

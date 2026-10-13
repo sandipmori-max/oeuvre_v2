@@ -386,13 +386,13 @@ const CustomSplashScreen: React.FC<SplashProps> = ({ onFinish }) => {
     : isTablet
       ? 118
       : user?.company_code.toLowerCase() === 'deverp' ? 106 
-      : user?.company_code.toLowerCase() === 'oeuvre01' ? 110
+      : user?.company_code.toLowerCase() === 'oeuvre01' ? 210
       : user?.company_code.toLowerCase() === 'gayatrirubtech' ? 260 :
        240;
 
   const logoContainerSize = !user ? logoSize - 80 :
   user?.company_code.toLowerCase() === 'deverp' ? logoSize + 56  :
-  user?.company_code.toLowerCase() === 'oeuvre01' ? logoSize :
+  user?.company_code.toLowerCase() === 'oeuvre01' ? logoSize - 80 :
   user?.company_code.toLowerCase() === 'gayatrirubtech' ? 
   logoSize - 110
   : logoSize - 80;
