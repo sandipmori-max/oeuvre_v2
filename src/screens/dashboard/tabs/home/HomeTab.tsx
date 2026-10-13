@@ -1687,7 +1687,526 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                       color: theme === 'dark' ? 'white' : 'black'
                     }}>Welcome</Text>
                   </View>
-                </View> : <NoData isShowTop={false} />
+                </View> :
+                  <>
+                    {
+                      attendance?.intime ? <>
+
+                        <View style={{ flex: 1 }}>
+                          {
+                            attendance?.intime && (
+                              <>
+                                <View
+                                  style={{
+                                    marginTop: 2,
+                                    marginBottom: 2,
+                                    backgroundColor:
+                                      theme === "dark" ? "gray" : "#f5f5f5",
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                    padding: 8,
+                                    borderRadius: 4,
+                                    alignItems: "center",
+                                    marginHorizontal: 8,
+                                  }}
+                                >
+                                  <View
+                                    style={{
+                                      justifyContent: "center",
+                                      alignContent: "center",
+                                      alignItems: "center",
+                                      flexDirection: "row",
+                                      gap: 4,
+                                    }}
+                                  >
+                                    <MaterialIcons
+                                      size={14}
+                                      color={
+                                        theme === "dark" ? "white" : "gray"
+                                      }
+                                      name="dashboard"
+                                    />
+                                    <Text
+                                      style={{
+                                        color:
+                                          theme === "dark" ? "white" : "black",
+                                        fontWeight: "600",
+                                      }}
+                                    >
+                                      Today Attendance
+                                    </Text>
+                                  </View>
+
+                                  <View
+                                    style={{
+                                      opacity: 0.6,
+                                      justifyContent: "center",
+                                      alignItems: "center",
+                                      borderRadius: 4,
+                                    }}
+                                  >
+                                    <Text
+                                      style={{
+                                        color:
+                                          theme === "dark" ? "white" : "gray",
+                                        fontWeight: "600",
+                                      }}
+                                    >
+                                      {new Date().toLocaleDateString()}
+                                    </Text>
+                                  </View>
+                                </View>
+                              </>
+                            )}
+
+                          {
+                            attendance?.intime && (
+                              <>
+                                <View style={styles.timeContainer}>
+                                  <View style={styles.timeItem}>
+                                    <View
+                                      style={[
+                                        styles.iconTimeContainer,
+                                        {
+                                          backgroundColor:
+                                            theme === "dark"
+                                              ? "gray"
+                                              : "#f5f5f5",
+                                        },
+                                      ]}
+                                    >
+                                      <MaterialIcons
+                                        name="login"
+                                        size={22}
+                                        color={
+                                          theme === "dark"
+                                            ? "white"
+                                            : ERP_COLOR_CODE.ERP_APP_COLOR
+                                        }
+                                      />
+                                    </View>
+                                    <Text
+                                      style={[
+                                        styles.timeText,
+                                        {
+                                          color:
+                                            theme === "dark"
+                                              ? "gray"
+                                              : "#000",
+                                        },
+                                      ]}
+                                    >
+                                      {attendance?.intime || "-"}
+                                    </Text>
+                                    <Text
+                                      style={[
+                                        styles.labelText,
+                                      ]}
+                                    >
+                                      Check In
+                                    </Text>
+                                  </View>
+                                  <TouchableOpacity
+                                    disabled={workingTime !== "00:00:00"}
+                                    onPress={() => {
+                                      navigation.navigate("Attendance", {
+                                        isFor: "Attendance",
+                                        isFromBreak: true,
+                                      });
+                                    }}
+                                    style={styles.timeItem}>
+                                    <View
+                                      style={[
+                                        styles.iconTimeContainer,
+                                        {
+                                          backgroundColor:
+                                            theme === "dark"
+                                              ? "gray"
+                                              : "#f5f5f5",
+                                        },
+                                      ]}
+                                    >
+                                      <MaterialIcons
+                                        name="access-time"
+                                        size={22}
+                                        color={
+                                          theme === "dark"
+                                            ? "white"
+                                            : ERP_COLOR_CODE.ERP_green
+                                        }
+                                      />
+                                    </View>
+                                    <Text
+                                      style={[
+                                        styles.timeText,
+                                        {
+                                          color:
+                                            theme === "dark"
+                                              ? "white"
+                                              : ERP_COLOR_CODE.ERP_green,
+                                        },
+                                      ]}
+                                    >
+                                      {workingTime}
+                                    </Text>
+                                    <Text
+                                      style={[
+                                        styles.labelText,
+                                      ]}
+                                    >
+                                      Working Hrs
+                                    </Text>
+                                  </TouchableOpacity>
+                                  {/* Clock Out */}
+                                  <TouchableOpacity
+                                    onPress={() => {
+                                      navigation.navigate("Attendance", {
+                                        isFor: "Attendance",
+                                        isFromDashboard: true,
+                                      });
+                                    }}
+                                    style={styles.timeItem}
+                                  >
+                                    <View
+                                      style={[
+                                        styles.iconTimeContainer,
+                                        {
+                                          backgroundColor:
+                                            theme === "dark"
+                                              ? "gray"
+                                              : "#f5f5f5",
+                                        },
+                                      ]}
+                                    >
+                                      <MaterialIcons
+                                        name="logout"
+                                        size={22}
+                                        color={
+                                          theme === "dark"
+                                            ? "white"
+                                            : ERP_COLOR_CODE.ERP_ERROR
+                                        }
+                                      />
+                                    </View>
+                                    <Text
+                                      style={[
+                                        styles.timeText,
+                                        {
+                                          color: ERP_COLOR_CODE.ERP_ERROR,
+                                        },
+                                      ]}
+                                    >
+                                      -
+                                    </Text>
+                                    <Text
+                                      style={[
+                                        styles.labelText,
+                                      ]}
+                                    >
+                                      Check Out
+                                    </Text>
+                                  </TouchableOpacity>
+                                </View>
+                              </>
+                            )}
+
+
+                          {
+                            attendance?.intime && (
+
+                              <>
+
+
+                                <View
+                                  style={{
+                                    marginTop: 4,
+                                    backgroundColor:
+                                      theme === "dark" ? "gray" : "#f5f5f5",
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                    padding: 8,
+                                    borderRadius: 4,
+                                    alignItems: "center",
+                                    marginHorizontal: 8,
+                                  }}
+                                >
+                                  <View
+                                    style={{
+                                      justifyContent: "center",
+                                      alignContent: "center",
+                                      alignItems: "center",
+                                      flexDirection: "row",
+                                      gap: 4,
+                                    }}
+                                  >
+                                    <MaterialIcons
+                                      size={14}
+                                      color={
+                                        theme === "dark" ? "white" : "gray"
+                                      }
+                                      name="dashboard"
+                                    />
+                                    <Text
+                                      style={{
+                                        color:
+                                          theme === "dark" ? "white" : "black",
+                                        fontWeight: "600",
+                                      }}
+                                    >
+                                      Attendance Summary
+                                    </Text>
+                                  </View>
+
+                                  <TouchableOpacity
+                                    onPress={() => {
+                                      navigation.navigate("MyAttendance", {
+                                        isFor: "MyAttendance",
+                                      });
+                                    }}
+                                    style={{
+                                      opacity: 0.6,
+                                      justifyContent: "center",
+                                      alignItems: "center",
+                                      borderRadius: 4,
+                                    }}
+                                  >
+                                    <Text
+                                      style={{
+                                        color:
+                                          theme === "dark" ? "white" : "gray",
+                                        fontWeight: "600",
+                                      }}
+                                    >
+                                      View all
+                                    </Text>
+                                  </TouchableOpacity>
+                                </View>
+                                <View
+                                  style={[
+                                    styles.timeContainer,
+                                    {
+                                      flexDirection: "row",
+                                      flexWrap: "wrap",
+                                      justifyContent: "space-between",
+                                    },
+                                  ]}
+                                >
+
+
+                                  {statusCards.length > 0 && statusCards?.map((item) => (
+                                    <View
+                                      key={item.status}
+                                      style={[
+                                        styles.timeItem,
+                                        {
+                                          width: "31%",
+                                          marginBottom: 8,
+                                        },
+                                      ]}
+                                    >
+                                      {/* <View
+                                        style={[
+                                          styles.iconTimeContainer,
+                                          {
+                                            backgroundColor:
+                                              theme === "dark"
+                                                ? "gray"
+                                                : "#f5f5f5",
+                                          },
+                                        ]}
+                                      >
+                                        <MaterialIcons
+                                          name="info"
+                                          size={22}
+                                          color={
+                                            theme === "dark"
+                                              ? "white"
+                                              : ERP_COLOR_CODE.ERP_APP_COLOR
+                                          }
+                                        />
+                                      </View> */}
+
+                                      <Text style={[styles.timeText, {
+                                        marginTop: 12
+                                      },
+                                      {
+                                        color:
+                                          theme === "dark"
+                                            ? "#fff"
+                                            : "#000",
+                                      },
+
+                                      ]}>
+                                        {item.count}
+                                      </Text>
+
+                                      <Text
+                                        style={[
+                                          styles.labelText,
+                                          {
+                                            textAlign: "center",
+                                          },
+                                        ]}
+                                        numberOfLines={1}
+                                      >
+                                        {item.status}
+                                      </Text>
+                                    </View>
+                                  ))}
+                                </View>
+                              </>
+
+                            )}
+
+
+                          {
+                            attendance?.intime && listLeaveBalData.length > 0 && (
+                              <LeaveBalanceSection listLeaveBalData={listLeaveBalData} />
+                            )}
+
+                          {
+                            listShiftData && attendance?.intime && (
+                              <>
+                                <View
+                                  style={{
+                                    marginTop: 4,
+                                    backgroundColor:
+                                      theme === "dark" ? "gray" : "#f5f5f5",
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                    padding: 8,
+                                    borderRadius: 4,
+                                    alignItems: "center",
+                                    marginHorizontal: 8,
+                                  }}
+                                >
+                                  <View
+                                    style={{
+                                      justifyContent: "center",
+                                      alignContent: "center",
+                                      alignItems: "center",
+                                      flexDirection: "row",
+                                      gap: 4,
+                                    }}
+                                  >
+                                    <MaterialIcons
+                                      size={14}
+                                      color={
+                                        theme === "dark" ? "white" : "gray"
+                                      }
+                                      name="dashboard"
+                                    />
+                                    <Text
+                                      style={{
+                                        color:
+                                          theme === "dark" ? "white" : "black",
+                                        fontWeight: "600",
+                                      }}
+                                    >
+                                      Shift Summary
+                                    </Text>
+                                  </View>
+
+                                </View>
+                                <View
+                                  style={[
+                                    styles.timeContainer,
+                                    {
+                                      flexDirection: "row",
+                                      flexWrap: "wrap",
+                                      justifyContent: "space-between",
+
+                                    },
+
+                                  ]}
+                                >
+
+
+                                  {listShiftData.length > 0 &&
+                                    listShiftData.map((item, index) => (
+                                      <View
+                                        key={`${item?.shiftname}-${index}`}
+                                        style={[styles.shiftCard,
+
+                                        {
+                                          backgroundColor:
+                                            theme === "dark" ? "#000" : "#fff",
+                                        }
+
+                                        ]}
+                                      >
+                                        <View style={styles.shiftHeader}>
+                                          <Text style={[styles.shiftNameText,
+
+                                          {
+                                            color:
+                                              theme === "dark" ? "#fff" : "#000",
+                                          }
+                                          ]}>
+                                            {item?.shiftname}
+                                          </Text>
+
+                                          <Text style={[styles.workingHoursText,
+                                          {
+                                            color:
+                                              theme === "dark" ? "#fff" : "#000",
+                                          }
+                                          ]}>
+                                            {item?.totalworkinghours} hr.
+                                          </Text>
+                                        </View>
+
+                                        <View style={styles.shiftRow}>
+                                          <Text style={[styles.shiftLabel,
+                                          {
+                                            color:
+                                              theme === "dark" ? "#fff" : "#000",
+                                          }
+                                          ]}>Shift Time</Text>
+                                          <Text style={[styles.shiftValue, {
+                                            color:
+                                              theme === "dark" ? "#fff" : "#000",
+                                          }]}>
+                                            {item?.starttime} - {item?.endtime}
+                                          </Text>
+                                        </View>
+
+                                        <View style={styles.shiftRow}>
+                                          <Text style={[styles.shiftLabel, {
+                                            color:
+                                              theme === "dark" ? "#fff" : "#000",
+                                          }]}>Break Time</Text>
+                                          <Text style={[styles.shiftValue, {
+                                            color:
+                                              theme === "dark" ? "#fff" : "#000",
+                                          }]}>
+                                            {item?.breakstart} - {item?.breakend}
+                                          </Text>
+                                        </View>
+
+                                        <View style={styles.shiftRow}>
+                                          <Text style={[styles.shiftLabel, {
+                                            color:
+                                              theme === "dark" ? "#fff" : "#000",
+                                          }]}>Weekly off</Text>
+                                          <Text style={[styles.shiftValue, {
+                                            color:
+                                              theme === "dark" ? "#fff" : "#000",
+                                          }]}>
+                                            {item?.weekoff}
+                                          </Text>
+                                        </View>
+                                      </View>
+                                    ))}
+                                </View>
+                              </>
+
+                            )}
+                        </View>
+
+                      </> : <NoData isShowTop={false} />
+                    }
+                  </>
               }
 
             </>
@@ -2235,7 +2754,524 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                   backgroundColor: theme === "dark" ? "black" : "white",
                                 }}
                               >
-                                <NoData isShowTop={false} />
+                                <>
+                                  {
+                                    attendance?.intime ? <>
+                                      <View style={{ flex: 1 }}>
+                                        {
+                                          attendance?.intime && (
+                                            <>
+                                              <View
+                                                style={{
+                                                  marginTop: 2,
+                                                  marginBottom: 2,
+                                                  backgroundColor:
+                                                    theme === "dark" ? "gray" : "#f5f5f5",
+                                                  flexDirection: "row",
+                                                  justifyContent: "space-between",
+                                                  padding: 8,
+                                                  borderRadius: 4,
+                                                  alignItems: "center",
+                                                  marginHorizontal: 8,
+                                                }}
+                                              >
+                                                <View
+                                                  style={{
+                                                    justifyContent: "center",
+                                                    alignContent: "center",
+                                                    alignItems: "center",
+                                                    flexDirection: "row",
+                                                    gap: 4,
+                                                  }}
+                                                >
+                                                  <MaterialIcons
+                                                    size={14}
+                                                    color={
+                                                      theme === "dark" ? "white" : "gray"
+                                                    }
+                                                    name="dashboard"
+                                                  />
+                                                  <Text
+                                                    style={{
+                                                      color:
+                                                        theme === "dark" ? "white" : "black",
+                                                      fontWeight: "600",
+                                                    }}
+                                                  >
+                                                    Today Attendance
+                                                  </Text>
+                                                </View>
+
+                                                <View
+                                                  style={{
+                                                    opacity: 0.6,
+                                                    justifyContent: "center",
+                                                    alignItems: "center",
+                                                    borderRadius: 4,
+                                                  }}
+                                                >
+                                                  <Text
+                                                    style={{
+                                                      color:
+                                                        theme === "dark" ? "white" : "gray",
+                                                      fontWeight: "600",
+                                                    }}
+                                                  >
+                                                    {new Date().toLocaleDateString()}
+                                                  </Text>
+                                                </View>
+                                              </View>
+                                            </>
+                                          )}
+
+                                        {
+                                          attendance?.intime && (
+                                            <>
+                                              <View style={styles.timeContainer}>
+                                                <View style={styles.timeItem}>
+                                                  <View
+                                                    style={[
+                                                      styles.iconTimeContainer,
+                                                      {
+                                                        backgroundColor:
+                                                          theme === "dark"
+                                                            ? "gray"
+                                                            : "#f5f5f5",
+                                                      },
+                                                    ]}
+                                                  >
+                                                    <MaterialIcons
+                                                      name="login"
+                                                      size={22}
+                                                      color={
+                                                        theme === "dark"
+                                                          ? "white"
+                                                          : ERP_COLOR_CODE.ERP_APP_COLOR
+                                                      }
+                                                    />
+                                                  </View>
+                                                  <Text
+                                                    style={[
+                                                      styles.timeText,
+                                                      {
+                                                        color:
+                                                          theme === "dark"
+                                                            ? "gray"
+                                                            : "#000",
+                                                      },
+                                                    ]}
+                                                  >
+                                                    {attendance?.intime || "-"}
+                                                  </Text>
+                                                  <Text
+                                                    style={[
+                                                      styles.labelText,
+                                                    ]}
+                                                  >
+                                                    Check In
+                                                  </Text>
+                                                </View>
+                                                <TouchableOpacity
+                                                  disabled={workingTime !== "00:00:00"}
+                                                  onPress={() => {
+                                                    navigation.navigate("Attendance", {
+                                                      isFor: "Attendance",
+                                                      isFromBreak: true,
+                                                    });
+                                                  }}
+                                                  style={styles.timeItem}>
+                                                  <View
+                                                    style={[
+                                                      styles.iconTimeContainer,
+                                                      {
+                                                        backgroundColor:
+                                                          theme === "dark"
+                                                            ? "gray"
+                                                            : "#f5f5f5",
+                                                      },
+                                                    ]}
+                                                  >
+                                                    <MaterialIcons
+                                                      name="access-time"
+                                                      size={22}
+                                                      color={
+                                                        theme === "dark"
+                                                          ? "white"
+                                                          : ERP_COLOR_CODE.ERP_green
+                                                      }
+                                                    />
+                                                  </View>
+                                                  <Text
+                                                    style={[
+                                                      styles.timeText,
+                                                      {
+                                                        color:
+                                                          theme === "dark"
+                                                            ? "white"
+                                                            : ERP_COLOR_CODE.ERP_green,
+                                                      },
+                                                    ]}
+                                                  >
+                                                    {workingTime}
+                                                  </Text>
+                                                  <Text
+                                                    style={[
+                                                      styles.labelText,
+                                                    ]}
+                                                  >
+                                                    Working Hrs
+                                                  </Text>
+                                                </TouchableOpacity>
+                                                {/* Clock Out */}
+                                                <TouchableOpacity
+                                                  onPress={() => {
+                                                    navigation.navigate("Attendance", {
+                                                      isFor: "Attendance",
+                                                      isFromDashboard: true,
+                                                    });
+                                                  }}
+                                                  style={styles.timeItem}
+                                                >
+                                                  <View
+                                                    style={[
+                                                      styles.iconTimeContainer,
+                                                      {
+                                                        backgroundColor:
+                                                          theme === "dark"
+                                                            ? "gray"
+                                                            : "#f5f5f5",
+                                                      },
+                                                    ]}
+                                                  >
+                                                    <MaterialIcons
+                                                      name="logout"
+                                                      size={22}
+                                                      color={
+                                                        theme === "dark"
+                                                          ? "white"
+                                                          : ERP_COLOR_CODE.ERP_ERROR
+                                                      }
+                                                    />
+                                                  </View>
+                                                  <Text
+                                                    style={[
+                                                      styles.timeText,
+                                                      {
+                                                        color: ERP_COLOR_CODE.ERP_ERROR,
+                                                      },
+                                                    ]}
+                                                  >
+                                                    -
+                                                  </Text>
+                                                  <Text
+                                                    style={[
+                                                      styles.labelText,
+                                                    ]}
+                                                  >
+                                                    Check Out
+                                                  </Text>
+                                                </TouchableOpacity>
+                                              </View>
+                                            </>
+                                          )}
+
+
+                                        {
+                                          attendance?.intime && (
+
+                                            <>
+
+
+                                              <View
+                                                style={{
+                                                  marginTop: 4,
+                                                  backgroundColor:
+                                                    theme === "dark" ? "gray" : "#f5f5f5",
+                                                  flexDirection: "row",
+                                                  justifyContent: "space-between",
+                                                  padding: 8,
+                                                  borderRadius: 4,
+                                                  alignItems: "center",
+                                                  marginHorizontal: 8,
+                                                }}
+                                              >
+                                                <View
+                                                  style={{
+                                                    justifyContent: "center",
+                                                    alignContent: "center",
+                                                    alignItems: "center",
+                                                    flexDirection: "row",
+                                                    gap: 4,
+                                                  }}
+                                                >
+                                                  <MaterialIcons
+                                                    size={14}
+                                                    color={
+                                                      theme === "dark" ? "white" : "gray"
+                                                    }
+                                                    name="dashboard"
+                                                  />
+                                                  <Text
+                                                    style={{
+                                                      color:
+                                                        theme === "dark" ? "white" : "black",
+                                                      fontWeight: "600",
+                                                    }}
+                                                  >
+                                                    Attendance Summary
+                                                  </Text>
+                                                </View>
+
+                                                <TouchableOpacity
+                                                  onPress={() => {
+                                                    navigation.navigate("MyAttendance", {
+                                                      isFor: "MyAttendance",
+                                                    });
+                                                  }}
+                                                  style={{
+                                                    opacity: 0.6,
+                                                    justifyContent: "center",
+                                                    alignItems: "center",
+                                                    borderRadius: 4,
+                                                  }}
+                                                >
+                                                  <Text
+                                                    style={{
+                                                      color:
+                                                        theme === "dark" ? "white" : "gray",
+                                                      fontWeight: "600",
+                                                    }}
+                                                  >
+                                                    View all
+                                                  </Text>
+                                                </TouchableOpacity>
+                                              </View>
+                                              <View
+                                                style={[
+                                                  styles.timeContainer,
+                                                  {
+                                                    flexDirection: "row",
+                                                    flexWrap: "wrap",
+                                                    justifyContent: "space-between",
+                                                  },
+                                                ]}
+                                              >
+
+
+                                                {statusCards.length > 0 && statusCards?.map((item) => (
+                                                  <View
+                                                    key={item.status}
+                                                    style={[
+                                                      styles.timeItem,
+                                                      {
+                                                        width: "31%",
+                                                        marginBottom: 8,
+                                                      },
+                                                    ]}
+                                                  >
+                                                    {/* <View
+                                        style={[
+                                          styles.iconTimeContainer,
+                                          {
+                                            backgroundColor:
+                                              theme === "dark"
+                                                ? "gray"
+                                                : "#f5f5f5",
+                                          },
+                                        ]}
+                                      >
+                                        <MaterialIcons
+                                          name="info"
+                                          size={22}
+                                          color={
+                                            theme === "dark"
+                                              ? "white"
+                                              : ERP_COLOR_CODE.ERP_APP_COLOR
+                                          }
+                                        />
+                                      </View> */}
+
+                                                    <Text style={[styles.timeText, {
+                                                      marginTop: 12
+                                                    },
+                                                    {
+                                                      color:
+                                                        theme === "dark"
+                                                          ? "#fff"
+                                                          : "#000",
+                                                    },
+
+                                                    ]}>
+                                                      {item.count}
+                                                    </Text>
+
+                                                    <Text
+                                                      style={[
+                                                        styles.labelText,
+                                                        {
+                                                          textAlign: "center",
+                                                        },
+                                                      ]}
+                                                      numberOfLines={1}
+                                                    >
+                                                      {item.status}
+                                                    </Text>
+                                                  </View>
+                                                ))}
+                                              </View>
+                                            </>
+
+                                          )}
+
+
+                                        {
+                                          attendance?.intime && listLeaveBalData.length > 0 && (
+                                            <LeaveBalanceSection listLeaveBalData={listLeaveBalData} />
+                                          )}
+
+                                        {
+                                          listShiftData && attendance?.intime && (
+                                            <>
+                                              <View
+                                                style={{
+                                                  marginTop: 4,
+                                                  backgroundColor:
+                                                    theme === "dark" ? "gray" : "#f5f5f5",
+                                                  flexDirection: "row",
+                                                  justifyContent: "space-between",
+                                                  padding: 8,
+                                                  borderRadius: 4,
+                                                  alignItems: "center",
+                                                  marginHorizontal: 8,
+                                                }}
+                                              >
+                                                <View
+                                                  style={{
+                                                    justifyContent: "center",
+                                                    alignContent: "center",
+                                                    alignItems: "center",
+                                                    flexDirection: "row",
+                                                    gap: 4,
+                                                  }}
+                                                >
+                                                  <MaterialIcons
+                                                    size={14}
+                                                    color={
+                                                      theme === "dark" ? "white" : "gray"
+                                                    }
+                                                    name="dashboard"
+                                                  />
+                                                  <Text
+                                                    style={{
+                                                      color:
+                                                        theme === "dark" ? "white" : "black",
+                                                      fontWeight: "600",
+                                                    }}
+                                                  >
+                                                    Shift Summary
+                                                  </Text>
+                                                </View>
+
+                                              </View>
+                                              <View
+                                                style={[
+                                                  styles.timeContainer,
+                                                  {
+                                                    flexDirection: "row",
+                                                    flexWrap: "wrap",
+                                                    justifyContent: "space-between",
+
+                                                  },
+
+                                                ]}
+                                              >
+
+
+                                                {listShiftData.length > 0 &&
+                                                  listShiftData.map((item, index) => (
+                                                    <View
+                                                      key={`${item?.shiftname}-${index}`}
+                                                      style={[styles.shiftCard,
+
+                                                      {
+                                                        backgroundColor:
+                                                          theme === "dark" ? "#000" : "#fff",
+                                                      }
+
+                                                      ]}
+                                                    >
+                                                      <View style={styles.shiftHeader}>
+                                                        <Text style={[styles.shiftNameText,
+
+                                                        {
+                                                          color:
+                                                            theme === "dark" ? "#fff" : "#000",
+                                                        }
+                                                        ]}>
+                                                          {item?.shiftname}
+                                                        </Text>
+
+                                                        <Text style={[styles.workingHoursText,
+                                                        {
+                                                          color:
+                                                            theme === "dark" ? "#fff" : "#000",
+                                                        }
+                                                        ]}>
+                                                          {item?.totalworkinghours} hr.
+                                                        </Text>
+                                                      </View>
+
+                                                      <View style={styles.shiftRow}>
+                                                        <Text style={[styles.shiftLabel,
+                                                        {
+                                                          color:
+                                                            theme === "dark" ? "#fff" : "#000",
+                                                        }
+                                                        ]}>Shift Time</Text>
+                                                        <Text style={[styles.shiftValue, {
+                                                          color:
+                                                            theme === "dark" ? "#fff" : "#000",
+                                                        }]}>
+                                                          {item?.starttime} - {item?.endtime}
+                                                        </Text>
+                                                      </View>
+
+                                                      <View style={styles.shiftRow}>
+                                                        <Text style={[styles.shiftLabel, {
+                                                          color:
+                                                            theme === "dark" ? "#fff" : "#000",
+                                                        }]}>Break Time</Text>
+                                                        <Text style={[styles.shiftValue, {
+                                                          color:
+                                                            theme === "dark" ? "#fff" : "#000",
+                                                        }]}>
+                                                          {item?.breakstart} - {item?.breakend}
+                                                        </Text>
+                                                      </View>
+
+                                                      <View style={styles.shiftRow}>
+                                                        <Text style={[styles.shiftLabel, {
+                                                          color:
+                                                            theme === "dark" ? "#fff" : "#000",
+                                                        }]}>Weekly off</Text>
+                                                        <Text style={[styles.shiftValue, {
+                                                          color:
+                                                            theme === "dark" ? "#fff" : "#000",
+                                                        }]}>
+                                                          {item?.weekoff}
+                                                        </Text>
+                                                      </View>
+                                                    </View>
+                                                  ))}
+                                              </View>
+                                            </>
+
+                                          )}
+                                      </View>
+
+                                    </> : <NoData isShowTop={false} />
+                                  }
+                                </>
                               </View>
                           }
                         </>
@@ -2632,7 +3668,7 @@ const HomeScreen = ({ setHideTab, hideTab }: any) => {
                                           },
                                         ]}
                                       >
-                                        {attendance.intime || "-"}
+                                        {attendance?.intime || "-"}
                                       </Text>
                                       <Text
                                         style={[

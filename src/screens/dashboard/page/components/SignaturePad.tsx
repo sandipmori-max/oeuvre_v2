@@ -162,7 +162,7 @@ const SignaturePad: React.FC = ({
           height: 30,
           width: 30,
           borderRadius: 8,
-          backgroundColor: ERP_COLOR_CODE.ERP_APP_COLOR,
+          backgroundColor: "gray",
           justifyContent: "center",
           alignItems: "center",
         }} onPress={() => {
@@ -284,6 +284,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: 0,
+    marginBottom: 10
   },
   container2: {
     position: 'absolute',

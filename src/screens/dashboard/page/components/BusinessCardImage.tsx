@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, use, useRef } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,9 @@ import {
   TouchableWithoutFeedback,
   Alert,
   useWindowDimensions,
-  NativeModules
+  NativeModules,
+  Animated,
+  PanResponder
 } from "react-native";
 import { launchImageLibrary } from "react-native-image-picker";
 import TextRecognition from "@react-native-ml-kit/text-recognition";
@@ -31,6 +33,9 @@ import ImageResizer from "@bam.tech/react-native-image-resizer";
 import { useNavigation } from "@react-navigation/native";
 import { downloadAndShare } from "../../../../utils/helpers";
 import InvoiceForm from "./InvoiceForm";
+import DynamicJsonView from "./DynamicJsonView";
+import { useAppSelector } from "../../../../store/hooks";
+import DeviceInfo from "react-native-device-info";
 
 
 const { DocumentScanner } = NativeModules;
@@ -62,7 +67,7 @@ const BusinessCardView = ({
 }: any) => {
 
   console.log("isFromInvoiceReaderisFromInvoiceReaderisFromInvoiceReaderisFromInvoiceReader", isFromInvoiceReader)
-    const navigation = useNavigation();
+  const navigation = useNavigation();
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [base64, setBase64] = useState(false);
@@ -71,10 +76,63 @@ const BusinessCardView = ({
   const { t } = useTranslations();
   const { height, width } = useWindowDimensions();
   const [scanLoader, setScanLoader] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false);
+  const [loadingLarge, setLoadingLarge] = useState(false);
+  const isIpad =
+    (Platform.OS === "ios" && Platform.isPad) || DeviceInfo.isTablet() || Platform.isTV;
 
+  const scale = useRef(new Animated.Value(1)).current;
+  const translateX = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(0)).current;
+  const lastScale = useRef(1);
+  const lastTranslate = useRef({ x: 0, y: 0 });
   const isLandscape = width > height;
+  const theme = useAppSelector((state) => state?.theme.mode);
   const [invoiceData, setInvoiceData] =
     useState<any>(null);
+
+
+  // -------------------- PanResponder & Zoom --------------------
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: (evt, gesture) => {
+        if (gesture.numberActiveTouches === 1) {
+          translateX.setValue(lastTranslate.current.x + gesture.dx);
+          translateY.setValue(lastTranslate.current.y + gesture.dy);
+        } else if (gesture.numberActiveTouches === 2) {
+          const touches = evt.nativeEvent.touches;
+          const dx = touches[0].pageX - touches[1].pageX;
+          const dy = touches[0].pageY - touches[1].pageY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (!lastScale.currentDistance) lastScale.currentDistance = distance;
+          const scaleFactor = distance / lastScale.currentDistance;
+          scale.setValue(
+            Math.max(1, Math.min(3, lastScale.current * scaleFactor)),
+          );
+        }
+      },
+      onPanResponderRelease: (_, gesture) => {
+        lastTranslate.current.x += gesture.dx;
+        lastTranslate.current.y += gesture.dy;
+        lastScale.current = scale.__getValue();
+        lastScale.currentDistance = undefined;
+      },
+    }),
+  ).current;
+
+  const zoomIn = () => {
+    scale.setValue(Math.min(3, scale.__getValue() + 0.2));
+    lastScale.current = scale.__getValue();
+  };
+
+  const zoomOut = () => {
+    scale.setValue(Math.max(1, scale.__getValue() - 0.2));
+    lastScale.current = scale.__getValue();
+  };
+  // -------------------- JSX --------------------
+
   const getImageUri = (type: "small" | "large") => {
     const base =
       imageUri ||
@@ -517,217 +575,113 @@ const BusinessCardView = ({
     return result;
   };
 
-  const MINDEE_URL = "https://api-v2.mindee.net";
-  const MINDEE_MODEL_ID = "c24a4d2b-dbe3-4dc2-8781-9d8255eb7cae";
 
+  const REDUCTO_URL = "https://platform.reducto.ai";
 
-  const MINDEE_API_KEY = "md_rDhKjr9Hd1Sfn-Xz1qQQui3Aw5WPGVgNAkpqZ2nRqrs";
+  // Keep the API key on your backend in production.
+  const REDUCTO_API_KEY = "2c702e638c21fb71f6a05378d82114f8e433903caf91babc8856edc0fe1c4a439799522923cb9f78eaa1afff9447450f";
 
-  // ----------------------------------------
-  // 1. ENQUEUE
-  // ----------------------------------------
+  const uploadReductoFile = async (fileUri: string) => {
+    const cleanUri = fileUri.split("?")[0];
+    const extension = cleanUri.split(".").pop()?.toLowerCase();
 
-  const enqueueMindeeInvoice = async (fileUri: string) => {
+    const isPdf = extension === "pdf";
+    const mimeType = isPdf ? "application/pdf" : "image/jpeg";
+    const fileName = `invoice-${Date.now()}.${isPdf ? "pdf" : "jpg"}`;
+
     const formData = new FormData();
 
     formData.append("file", {
       uri: fileUri,
-      type: "image/jpeg",
-      name: `invoice-${Date.now()}.jpg`,
+      type: mimeType,
+      name: fileName,
     } as any);
 
-    formData.append("model_id", MINDEE_MODEL_ID);
-
-    const response = await fetch(
-      `${MINDEE_URL}/v2/inferences/enqueue`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: MINDEE_API_KEY,
-          Accept: "application/json",
-        },
-        body: formData,
-      },
-    );
-
-    const text = await response.text();
-
-    console.log(
-      "MINDEE ENQUEUE STATUS:",
-      response.status,
-    );
-
-    console.log(
-      "MINDEE ENQUEUE RESPONSE:",
-      text,
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        `Mindee enqueue error ${response.status}: ${text}`,
-      );
-    }
-
-    return JSON.parse(text);
-  };
-
-
-  // ----------------------------------------
-  // 2. GET JOB
-  // ----------------------------------------
-
-  const getMindeeJob = async (jobId: string) => {
-    const resultUrl =
-      `${MINDEE_URL}/v2/products/extraction/results/${jobId}`;
-
-    console.log("[1] Result URL:", resultUrl);
-
-    const response = await fetch(resultUrl, {
-      method: "GET",
+    const response = await fetch(`${REDUCTO_URL}/upload`, {
+      method: "POST",
       headers: {
-        Authorization: MINDEE_API_KEY,
+        Authorization: `Bearer ${REDUCTO_API_KEY}`,
         Accept: "application/json",
       },
+      body: formData,
     });
-
-    console.log("[2] HTTP STATUS:", response.status);
 
     const text = await response.text();
 
-    console.log("[3] RESPONSE:", text);
-
-    // --------------------------------
-    // NOT READY
-    // --------------------------------
-
-    if (response.status === 404) {
-      const errorData = JSON.parse(text);
-
-      if (errorData?.code === "404-008") {
-        console.log(
-          "[4] Invoice is still processing..."
-        );
-
-        return {
-          ready: false,
-          data: null,
-        };
-      }
-    }
-
-    // --------------------------------
-    // OTHER ERRORS
-    // --------------------------------
+    console.log("REDUCTO UPLOAD STATUS:", response.status);
+    console.log("REDUCTO UPLOAD RESPONSE:", text);
 
     if (!response.ok) {
-      throw new Error(
-        `Mindee error ${response.status}: ${text}`,
-      );
+      throw new Error(`Reducto upload error ${response.status}: ${text}`);
     }
-
-    // --------------------------------
-    // READY
-    // --------------------------------
 
     const data = JSON.parse(text);
 
-    console.log("[5] Invoice is READY");
-
-    return {
-      ready: true,
-      data,
-    };
-  };
-
-
-  // ----------------------------------------
-  // 3. WAIT FOR JOB
-  // ----------------------------------------
-
-  const waitForMindeeJob = async (
-    jobId: string,
-    maxAttempts = 30,
-  ) => {
-    for (
-      let attempt = 1;
-      attempt <= maxAttempts;
-      attempt++
-    ) {
-      console.log(
-        `========== MINDEE POLL ${attempt}/${maxAttempts} ==========`
-      );
-
-      const result =
-        await getMindeeJob(jobId);
-
-      // Still processing
-      if (!result.ready) {
-        console.log(
-          "⏳ Mindee still processing..."
-        );
-
-        await new Promise(resolve =>
-          setTimeout(resolve, 2000),
-        );
-
-        continue;
-      }
-
-      // Ready
-      console.log(
-        "✅ Mindee invoice processing completed"
-      );
-
-      return result.data;
+    if (!data.file_id) {
+      throw new Error("Reducto upload response does not contain file_id");
     }
 
-    throw new Error(
-      "Mindee processing timeout",
-    );
+    return data.file_id as string;
   };
 
-  // ----------------------------------------
-  // 4. GET FINAL RESULT
-  // ----------------------------------------
-
-  const getMindeeResult = async (
-    resultUrl: string,
-  ) => {
-    const response = await fetch(
-      resultUrl,
-      {
-        method: "GET",
-        headers: {
-          Authorization: MINDEE_API_KEY,
-          Accept: "application/json",
-        },
+  const extractReductoInvoice = async (fileId: string) => {
+    const response = await fetch(`${REDUCTO_URL}/extract`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${REDUCTO_API_KEY}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
-    );
+      body: JSON.stringify({
+        input: fileId,
+        instructions: {
+          schema: {
+            type: "object",
+          },
+        },
+        settings: {
+          include_images: true,
+          optimize_for_latency: true,
+          citations: {
+            enabled: true,
+            numerical_confidence: false,
+          },
+        },
+      }),
+    });
 
     const text = await response.text();
 
-    console.log(
-      "MINDEE RESULT STATUS:",
-      response.status,
-    );
-
-    console.log(
-      "MINDEE RESULT:",
-      text,
-    );
+    console.log("REDUCTO EXTRACT STATUS:", response.status);
+    console.log("REDUCTO EXTRACT RESPONSE:", text);
 
     if (!response.ok) {
-      throw new Error(
-        `Mindee result error ${response.status}: ${text}`,
-      );
+      throw new Error(`Reducto extract error ${response.status}: ${text}`);
     }
 
     return JSON.parse(text);
+  };
+
+  const processReductoInvoice = async (fileUri: string) => {
+    console.log("========== REDUCTO INVOICE START ==========");
+
+    // Step 1: Upload PDF/image
+    const fileId = await uploadReductoFile(fileUri);
+
+    console.log("REDUCTO FILE ID:", fileId);
+
+    // Step 2: Extract invoice data
+    const result = await extractReductoInvoice(fileId);
+
+    console.log("REDUCTO INVOICE RESULT:", JSON.stringify(result, null, 2));
+
+    return result;
   };
 
   const handleScan = async () => {
     try {
-      setScanLoader(true)
+      setScanLoader(true);
+
       const result = await launchScannerAsync({
         quality: 0.8,
         includeExif: true,
@@ -750,134 +704,128 @@ const BusinessCardView = ({
           base64: img.base64 || null,
         }));
 
-
         setCacheBuster(Date.now());
 
-        if(isFromInvoiceReader){
-          console.log("isFromInvoiceReader00000000000")
-          const enqueueResponse =
-          await enqueueMindeeInvoice(processed[0].uri);
+        if (isFromInvoiceReader) {
+          console.log("REDUCTO INVOICE SCAN START");
 
-        const jobId =
-          enqueueResponse?.job?.id;
-
-        if (!jobId) {
-          throw new Error(
-            "Mindee Job ID not received",
-          );
-        }
-
-        console.log(
-          "Mindee Job ID:",
-          jobId,
-        );
-
-        const invoiceData =
-          await waitForMindeeJob(jobId);
-
-        console.log(
-          "FINAL INVOICE DATA:",
-          JSON.stringify(
-            invoiceData,
-            null,
-            2,
-          ),
-        );
-       
-        setInvoiceData(invoiceData);
-        }else {
-
-          if (result?.images?.length > 0) {
-        const processed = result.images.map((img: any) => ({
-          ...img,
-          base64: img.base64 || null,
-        }));
-
-
-        setCacheBuster(Date.now());
-        if (Platform.OS === 'android') {
-          const base64Data = await RNFS.readFile(
+          // Upload the scanned image and extract invoice data.
+          const invoiceData = await processReductoInvoice(
             processed[0].uri,
-            "base64",
           );
           setCacheBuster(Date.now());
-          setBase64(
-            `${item?.field}.jpeg; data:image/jpeg;base64,${base64Data}`
+          setImageUri(processed[0].uri)
+          console.log(
+            "FINAL REDUCTO INVOICE DATA:",
+            JSON.stringify(invoiceData, null, 2),
           );
+
+          setInvoiceData(invoiceData);
         } else {
-          setCacheBuster(Date.now());
-          setBase64(
-            `${item?.field}.jpeg; data:image/jpeg;base64,${processed[0]?.base64}`,
-          );
+          // Existing image/base64 flow — unchanged.
+          if (Platform.OS === "android") {
+            const base64Data = await RNFS.readFile(
+              processed[0].uri,
+              "base64",
+            );
+
+            setCacheBuster(Date.now());
+
+            setBase64(
+              `${item?.field}.jpeg; data:image/jpeg;base64,${base64Data}`,
+            );
+          } else {
+            setCacheBuster(Date.now());
+
+            setBase64(
+              `${item?.field}.jpeg; data:image/jpeg;base64,${processed[0]?.base64}`,
+            );
+          }
+
+          setImageUri(processed[0]?.uri);
         }
-
-        setImageUri(processed[0]?.uri);
-      } else {
-      }
-
-
-       
-        }
-        
-
-     
-
-
       }
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Something went wrong");
+      console.error("INVOICE SCAN ERROR:", error);
+
+      Alert.alert(
+        "Error",
+        error?.message || "Something went wrong",
+      );
     } finally {
-       setScanLoader(false)
+      setScanLoader(false);
       setShowPicker(false);
     }
   };
-
   return (
     <View >
       <Text style={styles.title}>{item?.fieldtitle}</Text>
 
       <View style={[styles.cardContainer,]}>
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={() => setShowPicker(true)}
+        <View
           style={[styles.card, {
             borderColor: ERP_COLOR_CODE.ERP_APP_COLOR,
           }]}
         >
           {loading ? (
             <View style={styles.loaderContainer}>
-              <ActivityIndicator size="large" color="#007bff" />
+              <ActivityIndicator size="large" color={ERP_COLOR_CODE.ERP_APP_COLOR} />
             </View>
           ) : (
             <>
-              <Image
-                source={{ uri: imageUri ? imageUri : getImageUri("small") }}
-                style={styles.image}
-                resizeMode='contain'
-              />
+              <TouchableOpacity onPress={() => {
+                if (imageUri) {
+                  setModalVisible(true);
+                  return;
+                }
+                setShowPicker(true)
+              }}>
+                <Image
+                  source={{ uri: imageUri ? imageUri : getImageUri("small") }}
+                  style={styles.image}
+                  resizeMode='contain'
+                />
+              </TouchableOpacity>
+
 
               {/* Overlay */}
               {
-                !imageUri && <View style={styles.overlay}>
-                  <MaterialIcons name="cloud-upload" size={28} color={ERP_COLOR_CODE.ERP_APP_COLOR} />
-                  <Text style={styles.overlayText}>
-                    {imageUri ? "Change Image" : "Upload Image"}
-                  </Text>
-                </View>
+                !imageUri &&
+                <TouchableOpacity onPress={() => {
+                  if (imageUri) {
+                    setModalVisible(true);
+                    return;
+                  }
+                  setShowPicker(true)
+                }}>
+                  <View style={[styles.overlay, {
+                    backgroundColor: '#f8f9ff'
+                  }]}>
+                    <MaterialIcons name='document-scanner' size={28} color={"gray"} />
+                    <Text style={styles.overlayText}>
+                      {imageUri ? "Change attachment" : "Scan attachment"}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
               }
 
             </>
           )}
 
           {/* Edit Icon */}
-          <View style={[styles.editIcon, {
-            backgroundColor: ERP_COLOR_CODE.ERP_APP_COLOR
-          }]}>
+          <TouchableOpacity
+            onPress={() => {
+              setShowPicker(true)
+            }}
+            style={[styles.editIcon, {
+              backgroundColor: "gray"
+            }]}>
             <MaterialIcons name="edit" size={16} color="#fff" />
-          </View>
+          </TouchableOpacity>
 
           <View style={[styles.shareIcon, {
-            backgroundColor: ERP_COLOR_CODE.ERP_APP_COLOR
+            backgroundColor: "gray"
           }]}>
             <TouchableOpacity
 
@@ -905,21 +853,14 @@ const BusinessCardView = ({
               <MaterialIcons name="share" size={16} color="#fff" />
             </View>
           </TouchableOpacity> */}
-        </TouchableOpacity>
+        </View>
       </View>
 
       {invoiceData && isFromInvoiceReader && (
         <View style={{ flex: 1 }}>
-          <InvoiceForm
-            mindeeData={invoiceData}
-            onSave={(data) => {
-              console.log(
-                "FINAL ERP INVOICE:",
-                JSON.stringify(data, null, 2),
-              );
-
-              // Yaha aapka ERP save API call
-            }}
+          <DynamicJsonView
+            title="OCR Json"
+            data={invoiceData}
           />
         </View>
       )}
@@ -928,15 +869,21 @@ const BusinessCardView = ({
         visible={showPicker}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowPicker(false)}
+        onRequestClose={() => {
+
+        }}
       >
-        <TouchableWithoutFeedback onPress={() => setShowPicker(false)}>
+        <TouchableWithoutFeedback onPress={() => {
+
+        }}>
           <View style={styles.modalOverlay} />
         </TouchableWithoutFeedback>
 
         <View style={styles.bottomSheet}>
           <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>{t("title.title10")}</Text>
+            <Text style={styles.sheetTitle}> {
+              scanLoader ? 'Scanning....' :
+                isFromInvoiceReader ? 'Upload attachment' : t("title.title10")}</Text>
             {
               !scanLoader && <TouchableOpacity
                 onPress={() => setShowPicker(false)}
@@ -947,42 +894,158 @@ const BusinessCardView = ({
             }
 
           </View>
-          {
-            scanLoader ? 
-            <ActivityIndicator size={'large'} color={'black'} /> : <View style={styles.optionRow}>
-              <TouchableOpacity
-                style={styles.optionCard}
-                onPress={handleScan}
-              >
-                <MaterialIcons name="document-scanner" size={40} color={ERP_COLOR_CODE.ERP_APP_COLOR + '90'} />
-                <Text style={styles.optionText}>Doc scan</Text>
-              </TouchableOpacity>
-          
-              {
-                !isFromInvoiceReader && <> 
-                <TouchableOpacity
-                style={styles.optionCard}
-                onPress={pickFromCamera}
-              >
-                <MaterialIcons name="photo-camera" size={40} color={ERP_COLOR_CODE.ERP_APP_COLOR + '90'} />
-                <Text style={styles.optionText}>{t("title.title11")}</Text>
-              </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.optionCard}
-                onPress={pickFromGallery}
-              >
-                <MaterialIcons name="photo-library" size={40} color={ERP_COLOR_CODE.ERP_APP_COLOR + '90'} />
-                <Text style={styles.optionText}>{t("title.title12")}</Text>
-              </TouchableOpacity>
-                </>
-              }
-              
-            </View>
+
+          {
+            scanLoader ?
+              <ActivityIndicator size={'large'} color={'black'} /> : <View style={styles.optionRow}>
+                <TouchableOpacity
+                  style={styles.optionCard}
+                  onPress={handleScan}
+                >
+                  <MaterialIcons name="document-scanner" size={40}   color={theme === "dark" ? "white" : "gray"}/>
+                  <Text style={styles.optionText}>Doc scan</Text>
+                </TouchableOpacity>
+
+                {/* {
+                  isFromInvoiceReader && <TouchableOpacity
+                    style={styles.optionCard}
+                    onPress={handleScan}
+                  >
+                    <MaterialIcons name='upload-file' size={40} color={ERP_COLOR_CODE.ERP_APP_COLOR} />
+                    <Text style={styles.optionText}>Doc Upload</Text>
+                  </TouchableOpacity>
+                } */}
+
+
+                {
+                  !isFromInvoiceReader && <>
+                    <TouchableOpacity
+                      style={styles.optionCard}
+                      onPress={pickFromCamera}
+                    >
+                      <MaterialIcons name="photo-camera" size={40}   color={theme === "dark" ? "white" : "gray"} />
+                      <Text style={styles.optionText}>{t("title.title11")}</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.optionCard}
+                      onPress={pickFromGallery}
+                    >
+                      <MaterialIcons name="photo-library" size={40}   color={theme === "dark" ? "white" : "gray"} />
+                      <Text style={styles.optionText}>{t("title.title12")}</Text>
+                    </TouchableOpacity>
+                  </>
+                }
+
+              </View>
           }
 
         </View>
       </Modal>
+
+
+      {/* Fullscreen Image Modal */}
+      {modalVisible && (
+        <Modal
+          supportedOrientations={["portrait", "landscape"]}
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            scale.setValue(1);
+            translateX.setValue(0);
+            translateY.setValue(0);
+            lastTranslate.current = { x: 0, y: 0 };
+            lastScale.current = 1;
+            setModalVisible(false);
+          }}
+        >
+          <View
+            style={[
+              styles.fullscreenModalOverlay,
+              (isIpad || isLandscape) && {
+                alignContent: "center",
+                alignItems: "center",
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.fullscreenModalContent,
+                {
+                  width: (isIpad || isLandscape) ? "50%" : "100%",
+                },
+              ]}
+            >
+              <TouchableOpacity
+                style={styles.closeBtnShare}
+                onPress={() => {
+                  downloadAndShare(getImageUri("large"), "image/jpeg");
+                }}
+              >
+                <MaterialIcons
+                  name="share"
+                  size={30}
+                  color={theme === "dark" ? "white" : ERP_COLOR_CODE.ERP_WHITE}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.closeBtn}
+                onPress={() => {
+                  scale.setValue(1);
+                  translateX.setValue(0);
+                  translateY.setValue(0);
+                  lastTranslate.current = { x: 0, y: 0 };
+                  lastScale.current = 1;
+                  setModalVisible(false);
+                }}
+              >
+                <MaterialIcons
+                  name="close"
+                  size={30}
+                  color={theme === "dark" ? "white" : ERP_COLOR_CODE.ERP_WHITE}
+                />
+              </TouchableOpacity>
+
+              {loadingLarge && (
+                <ActivityIndicator
+                  style={StyleSheet.absoluteFill}
+                  size="large"
+                  color={ERP_COLOR_CODE.ERP_WHITE}
+                />
+              )}
+
+              <Animated.View
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  transform: [{ scale }, { translateX }, { translateY }],
+                }}
+                {...panResponder.panHandlers}
+              >
+                <Image
+                  source={{ uri: getImageUri("large") }}
+                  style={styles.fullscreenImage}
+                  resizeMode="contain"
+                  onLoadStart={() => setLoadingLarge(true)}
+                  onLoadEnd={() => setLoadingLarge(false)}
+                />
+              </Animated.View>
+
+              <View style={styles.zoomControls}>
+                <TouchableOpacity style={styles.zoomBtn} onPress={zoomIn}>
+                  <MaterialIcons name="zoom-in" size={28} color="#000" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.zoomBtn} onPress={zoomOut}>
+                  <MaterialIcons name="zoom-out" size={28} color="#000" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 };
@@ -991,7 +1054,49 @@ const styles = StyleSheet.create({
   cardContainer: {
     marginVertical: 10,
   },
+  fullscreenModalContent: {
+    flex: 1,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  closeBtnShare: {
+    position: "absolute",
+    top: 80,
+    right: 80,
+    zIndex: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    alignItems: "center",
 
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+
+  fullscreenImage: {
+    width: "100%",
+    height: "100%",
+  },
+  fullscreenModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.92)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  zoomBtn: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: ERP_COLOR_CODE.ERP_WHITE,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   card: {
     width: "100%",
     height: 180,
@@ -1000,6 +1105,23 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f9ff",
     borderWidth: 2,
     borderStyle: "dashed",
+  },
+  zoomControls: {
+    position: "absolute",
+    bottom: 40,
+    flexDirection: "row",
+    gap: 16,
+
+    backgroundColor: "rgba(255,255,255,0.9)",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 30,
+
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 8,
   },
 
   image: {
@@ -1012,12 +1134,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: "100%",
     paddingVertical: 10,
-    backgroundColor: "rgba(212, 199, 199, 0.4)",
+    backgroundColor: "#fff",
     alignItems: "center",
   },
 
   overlayText: {
-    color: "#000",
+    color: 'gray',
     fontSize: 13,
     marginTop: 4,
   },
@@ -1106,6 +1228,29 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   optionText: { marginTop: 10, color: "#333" },
+  closeBtn: {
+    position: "absolute",
+    top: 80,
+    right: 20,
+    zIndex: 20,
+
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    alignItems: "center",
+
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  fullscreenImage: {
+    width: "100%",
+    height: "100%",
+  },
 });
 
 export default BusinessCardView;

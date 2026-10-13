@@ -189,9 +189,9 @@ const DocScan: React.FC<DocScanProps> = ({
             <MaterialIcons
               name="document-scanner"
               size={42}
-              color={ERP_COLOR_CODE.ERP_APP_COLOR}
+              color={"gray"}
             />
-            <Text style={styles.emptyText}>No documents scanned yet</Text>
+            <Text style={styles.emptyText}>Tap to Doc scan</Text>
           </View>
         )}
 
@@ -319,8 +319,7 @@ const styles = StyleSheet.create({
 
   emptyText: {
     marginTop: 8,
-    color: "#9ca3af",
-    fontSize: 13,
+    color: "gray", 
   },
 
   card: {

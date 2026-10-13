@@ -632,6 +632,7 @@ const List = ({
   };
 
 
+  console.log("listData", listData)
   const chartData = useMemo(() => {
     return Object.entries(
       listData.reduce(

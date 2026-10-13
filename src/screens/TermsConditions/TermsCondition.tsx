@@ -156,19 +156,14 @@ const TermsAndConsent = ({ onAccept }: any) => {
                 guaranteed.
               </Text>
 
-              
-
-              <Text style={styles.sectionTitle}>7. Changes to Terms</Text>
-              <Text style={styles.text}>
-                We may update these Terms periodically. Users will be notified
-                via the app or email.
+              <Text style={styles.sectionTitle}>
+                7. Limitation of Liability
               </Text>
-
-              <Text style={styles.sectionTitle}>8. Governing Law</Text>
               <Text style={styles.text}>
-                These Terms are governed by the laws of India. Disputes fall
-                under Ahmedabad, Gujarat jurisdiction.
+                DevERP is provided “as is.” We are not liable for any damages
+                from use, inability to use, or reliance on the app.
               </Text>
+ 
 
               {/* TERMS CHECKBOX */}
               <TouchableOpacity
@@ -280,20 +275,13 @@ const TermsAndConsent = ({ onAccept }: any) => {
               guaranteed.
             </Text>
 
-            
-
-            <Text style={styles.sectionTitle}>7. Changes to Terms</Text>
+            <Text style={styles.sectionTitle}>7. Limitation of Liability</Text>
             <Text style={styles.text}>
-              We may update these Terms periodically. Users will be notified via
-              the app or email.
+              DevERP is provided “as is.” We are not liable for any damages from
+              use, inability to use, or reliance on the app.
             </Text>
 
-            <Text style={styles.sectionTitle}>8. Governing Law</Text>
-            <Text style={styles.text}>
-              These Terms are governed by the laws of India. Disputes fall under
-              Ahmedabad, Gujarat jurisdiction.
-            </Text>
- 
+          
 
             {/* TERMS CHECKBOX */}
             <TouchableOpacity

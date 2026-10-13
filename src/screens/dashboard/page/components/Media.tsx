@@ -718,7 +718,7 @@ const Media = ({
               <MaterialIcons
                 name="add-photo-alternate"
                 color={
-                  theme === "dark" ? "white" : ERP_COLOR_CODE.ERP_APP_COLOR
+                  theme === "dark" ? "white" : "gray"
                 }
                 size={38}
               />
@@ -952,13 +952,13 @@ const Media = ({
                     <MaterialIcons
                       name={option?.icon}
                       size={36}
-                      color={theme === "dark" ? "white" : "black"}
+                      color={theme === "dark" ? "white" : "gray"}
                     />
                     <Text
                       style={[
                         styles.optionLabel,
                         {
-                          color: theme === "dark" ? "white" : "black",
+                          color: theme === "dark" ? "white" : "gray",
                         },
                       ]}
                     >
@@ -1078,6 +1078,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
+
+  /* ---------- FULLSCREEN IMAGE MODAL (IMPROVED) ---------- */
 
   fullscreenModalOverlay: {
     flex: 1,

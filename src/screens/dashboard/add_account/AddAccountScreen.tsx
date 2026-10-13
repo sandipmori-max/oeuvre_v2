@@ -522,8 +522,13 @@ const AddAccountScreen: React.FC<AddAccountScreenProps> = ({
                   >
                     <Formik
                       initialValues={{
-                        company_code: user?.company_code?.toLowerCase()?.includes("gayatrirubtech") ? 'gayatrirubtech' : user?.company_code?.toLowerCase()?.includes("oeuvre01") ? 'oeuvre01' : "",
-                        user: "",
+                        company_code: user?.company_code?.toLowerCase()?.includes("gayatrirubtech")
+                          ? 'gayatrirubtech'
+                          : user?.company_code?.toLowerCase()?.includes("oeuvre01")
+                            ? 'oeuvre01'
+                            : user?.company_code?.toLowerCase()?.includes("hcpl2024")
+                              ? 'hcpl2024'
+                              : "", user: "",
                         password: "",
                       }}
                       validationSchema={erpAddAccountValidationSchema(t)}
@@ -542,10 +547,11 @@ const AddAccountScreen: React.FC<AddAccountScreenProps> = ({
                           <>
                             {/* Company Code Input */}
                             {
-                     (
-  !user?.company_code?.toLowerCase()?.includes("gayatrirubtech") &&
-  !user?.company_code?.toLowerCase()?.includes("oeuvre01")
-) && <View style={styles.inputContainer}>
+                              (
+                                !user?.company_code?.toLowerCase()?.includes("gayatrirubtech") &&
+                                !user?.company_code?.toLowerCase()?.includes("oeuvre01") &&
+                                !user?.company_code?.toLowerCase()?.includes("hcpl2024")
+                              ) && <View style={styles.inputContainer}>
                                 <Text
                                   style={[
                                     styles.inputLabel,
@@ -941,8 +947,13 @@ const AddAccountScreen: React.FC<AddAccountScreenProps> = ({
 
                           <Formik
                             initialValues={{
-                              company_code: user?.company_code?.toLowerCase()?.includes("gayatrirubtech") ? 'gayatrirubtech' : user?.company_code?.toLowerCase()?.includes("oeuvre01") ? 'oeuvre01' : "",
-                              user: "",
+                              company_code: user?.company_code?.toLowerCase()?.includes("gayatrirubtech")
+                                ? 'gayatrirubtech'
+                                : user?.company_code?.toLowerCase()?.includes("oeuvre01")
+                                  ? 'oeuvre01'
+                                  : user?.company_code?.toLowerCase()?.includes("hcpl2024")
+                                    ? 'hcpl2024'
+                                    : "", user: "",
                               password: "",
                             }}
                             validationSchema={erpAddAccountValidationSchema(
@@ -965,9 +976,10 @@ const AddAccountScreen: React.FC<AddAccountScreenProps> = ({
                                   {/* Company Code Input */}
                                   {
                                     (
-  !user?.company_code?.toLowerCase()?.includes("gayatrirubtech") &&
-  !user?.company_code?.toLowerCase()?.includes("oeuvre01")
-) && <View style={styles.inputContainer}>
+                                      !user?.company_code?.toLowerCase()?.includes("gayatrirubtech") &&
+                                      !user?.company_code?.toLowerCase()?.includes("oeuvre01") &&
+                                      !user?.company_code?.toLowerCase()?.includes("hcpl2024")
+                                    ) && <View style={styles.inputContainer}>
                                       <Text
                                         style={[
                                           styles.inputLabel,

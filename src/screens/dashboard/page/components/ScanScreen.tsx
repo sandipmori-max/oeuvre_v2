@@ -123,9 +123,9 @@ const ScanScreen = ({ item, errors , onValueChange}: any) => {
             <MaterialIcons
               name="qr-code-scanner"
               size={42}
-              color={ERP_COLOR_CODE.ERP_APP_COLOR}
+              color={"gray"}
             />
-            <Text style={styles.squareScanText}>Tap to  {item?.title}</Text>
+            <Text style={styles.squareScanText}>Tap to {item?.title}</Text>
           </TouchableOpacity>
         )}
 
@@ -159,6 +159,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 12,
     backgroundColor: "white",
+    padding : 12
   },
   label: {
     fontSize: 15,
@@ -224,5 +225,6 @@ const styles = StyleSheet.create({
   squareScanText: {
     marginTop: 10,
     fontSize: 14,
+    color : 'gray'
   },
 });

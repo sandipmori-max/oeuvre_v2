@@ -170,7 +170,7 @@ const FilePickerRow = ({
         }
 
         ]} onPress={openFilePicker}>
-          <MaterialIcons name="cloud-upload" size={36} color={theme === "dark" ? "#fff" : ERP_COLOR_CODE.ERP_APP_COLOR} />
+          <MaterialIcons name="cloud-upload" size={36} color={theme === "dark" ? "#fff" : "gray"} />
           <Text style={styles.uploadSub}>Tap to browse files</Text>
         </TouchableOpacity>
       )}

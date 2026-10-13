@@ -1,8 +1,10 @@
 const ERP_BASE_URL_ICONS = './icons';
 const ERP_BASE_URL_GIF = './gif';
-const ABHA_BASE_URL_ICONS = './icons';
+const ERP_SOUND = './sounds';
 
 const APP_LOGO = require(`${ERP_BASE_URL_ICONS}/logo.png`);
+const BEEP = require(`${ERP_SOUND}/beep.mp3`);
+
 
 const PROFILE1 = require(`${ERP_BASE_URL_ICONS}/uuser.png`);
 const BACK = require(`${ERP_BASE_URL_ICONS}/back.png`);
@@ -58,6 +60,7 @@ export const ERP_GIF = {
 
 };
 
-export const ABHA_ICON = {
-   NO_DATA,
+export const ERP_SOUNDS = {
+   BEEP,
  };
+

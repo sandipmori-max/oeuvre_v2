@@ -208,7 +208,7 @@ const LocationRow = ({
                 backgroundColor:
                   theme === "dark"
                     ? "white"
-                    : ERP_COLOR_CODE.ERP_APP_COLOR,
+                    : "gray",
                 borderRadius: 6,
                 alignItems: "center",
                 justifyContent: "center",

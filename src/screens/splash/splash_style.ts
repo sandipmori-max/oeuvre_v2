@@ -41,8 +41,9 @@ subtitle: {
   marginTop: 5,
 },
   logo: {
-    width: width * 0.7,
+    width: width * 0.3,
     height: width * 0.3,
+    borderRadius: 100,
   },
   helloTitle: {
     color: ERP_COLOR_CODE.ERP_555,
