@@ -1,408 +1,1211 @@
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import {
   View,
+  Text,
   Image,
   StatusBar,
   Animated,
   Easing,
+  StyleSheet,
   useWindowDimensions,
   Platform,
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
-import { SvgUri } from "react-native-svg";
+import DeviceInfo from "react-native-device-info";
 
 import { ERP_ICON } from "../../assets";
-import { styles } from "./splash_style";
 import { SplashProps } from "./types";
 import { useAppSelector } from "../../store/hooks";
 import useTranslations from "../../hooks/useTranslations";
 import { firstLetterUpperCase } from "../../utils/helpers";
-import { ERP_COLOR_CODE } from "../../utils/constants";
-import DeviceInfo from "react-native-device-info";
+import { useBaseLink } from "../../hooks/useBaseLink";
+
+const SPLASH_DURATION = 3600;
 
 const CustomSplashScreen: React.FC<SplashProps> = ({ onFinish }) => {
-  // EXISTING ANIMATIONS
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.7)).current;
-  const textTranslateY = useRef(new Animated.Value(40)).current;
-  const subtitleOpacity = useRef(new Animated.Value(0)).current;
-  const greetingOpacity = useRef(new Animated.Value(0)).current;
- const isIpad =
-   ( Platform.OS === "ios" && Platform.isPad) || DeviceInfo.isTablet() || Platform.isTV;
-  // NEW SPLASH ANIMATIONS
-  const topImageAnim = useRef(new Animated.Value(-200)).current;
-  const bottomImageAnim = useRef(new Animated.Value(200)).current;
-  const logoRotate = useRef(new Animated.Value(0)).current;
-
   const { height, width } = useWindowDimensions();
-  const isLandscape = width > height;
 
-  const theme = useAppSelector((state) => state?.theme.mode);
-  const { t } = useTranslations();
+  const isLandscape = width > height;
+  const baseLink = useBaseLink();
+  const isTablet =
+    (Platform.OS === "ios" && Platform.isPad) ||
+    DeviceInfo.isTablet() ||
+    Platform.isTV;
+
   const { user, appColorCode } = useAppSelector((state) => state.auth);
 
-  // 🔥 Dynamic Greeting
+  const { t } = useTranslations();
+
+  /*
+  ============================================================
+  BRAND COLOR
+  ============================================================
+  */
+
+  const brandColor =
+    typeof appColorCode === "string" && appColorCode.trim()
+      ? appColorCode
+      : "#039EE3";
+
+  /*
+  ============================================================
+  GREETING
+  ============================================================
+  */
+
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
 
-    if (hour < 12) return "Good Morning";
-    if (hour < 17) return "Good Afternoon";
+    if (hour < 12) {
+      return "Good Morning";
+    }
+
+    if (hour < 17) {
+      return "Good Afternoon";
+    }
 
     return "Good Evening";
   }, []);
 
-    useEffect(() => {
-  const start = Date.now();
+  /*
+  ============================================================
+  ANIMATION VALUES
+  ============================================================
+  */
 
-  // ✅ Total splash visible time
-  const TOTAL_SPLASH_TIME = 2200;
+  const screenOpacity = useRef(new Animated.Value(0)).current;
 
-  Animated.sequence([
-    // 🔥 Background animation
-    Animated.parallel([
-      Animated.spring(topImageAnim, {
-        toValue: 0,
-        damping: 14,
-        stiffness: 180,
-        mass: 0.7,
-        useNativeDriver: true,
-      }),
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const logoScale = useRef(new Animated.Value(0.65)).current;
 
-      Animated.spring(bottomImageAnim, {
-        toValue: 0,
-        damping: 14,
-        stiffness: 180,
-        mass: 0.7,
-        useNativeDriver: true,
-      }),
-    ]),
+  const greetingOpacity = useRef(new Animated.Value(0)).current;
+  const greetingTranslateY = useRef(new Animated.Value(18)).current;
 
-    // 🔥 Logo animation
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
+  const titleOpacity = useRef(new Animated.Value(0)).current;
+  const titleTranslateY = useRef(new Animated.Value(25)).current;
+
+  const subtitleOpacity = useRef(new Animated.Value(0)).current;
+
+  const lineProgress = useRef(new Animated.Value(0)).current;
+
+  const loadingOpacity = useRef(new Animated.Value(0.3)).current;
+
+  const orbOneScale = useRef(new Animated.Value(0.8)).current;
+  const orbTwoScale = useRef(new Animated.Value(0.75)).current;
+
+  const finishCalled = useRef(false);
+
+  /*
+  ============================================================
+  FINISH SPLASH
+  ============================================================
+  */
+
+  const finishSplash = () => {
+    if (finishCalled.current) {
+      return;
+    }
+
+    finishCalled.current = true;
+
+    onFinish();
+  };
+
+  /*
+  ============================================================
+  SPLASH ANIMATION
+  ============================================================
+  */
+
+  useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    /*
+    ----------------------------------------------------------
+    SCREEN
+    ----------------------------------------------------------
+    */
+
+    Animated.timing(screenOpacity, {
+      toValue: 1,
+      duration: 400,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+
+    /*
+    ----------------------------------------------------------
+    LOGO
+    ----------------------------------------------------------
+    */
+
+    const logoTimer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(logoOpacity, {
+          toValue: 1,
+          duration: 500,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+
+        Animated.spring(logoScale, {
+          toValue: 1,
+          damping: 14,
+          stiffness: 155,
+          mass: 0.75,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, 100);
+
+    timers.push(logoTimer);
+
+    /*
+    ----------------------------------------------------------
+    GREETING
+    ----------------------------------------------------------
+    */
+
+    const greetingTimer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(greetingOpacity, {
+          toValue: 1,
+          duration: 400,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+
+        Animated.timing(greetingTranslateY, {
+          toValue: 0,
+          duration: 400,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, 420);
+
+    timers.push(greetingTimer);
+
+    /*
+    ----------------------------------------------------------
+    TITLE
+    ----------------------------------------------------------
+    */
+
+    const titleTimer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(titleOpacity, {
+          toValue: 1,
+          duration: 500,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+
+        Animated.timing(titleTranslateY, {
+          toValue: 0,
+          duration: 500,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, 580);
+
+    timers.push(titleTimer);
+
+    /*
+    ----------------------------------------------------------
+    SUBTITLE
+    ----------------------------------------------------------
+    */
+
+    const subtitleTimer = setTimeout(() => {
+      Animated.timing(subtitleOpacity, {
         toValue: 1,
-        duration: 320,
+        duration: 450,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
-      }),
+      }).start();
+    }, 820);
 
-      Animated.spring(scaleAnim, {
+    timers.push(subtitleTimer);
+
+    /*
+    ----------------------------------------------------------
+    ACCENT LINE
+    ----------------------------------------------------------
+    */
+
+    const lineTimer = setTimeout(() => {
+      Animated.timing(lineProgress, {
         toValue: 1,
-        friction: 4,
-        tension: 90,
-        useNativeDriver: true,
-      }),
+        duration: 650,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }).start();
+    }, 900);
 
-      Animated.timing(logoRotate, {
-        toValue: 1,
-        duration: 320,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }),
-    ]),
+    timers.push(lineTimer);
 
-    // 🔥 Greeting animation
-    Animated.parallel([
-      Animated.timing(greetingOpacity, {
-        toValue: 1,
-        duration: 300,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }),
+    /*
+    ----------------------------------------------------------
+    BACKGROUND ORB 1
+    ----------------------------------------------------------
+    */
 
-      Animated.timing(textTranslateY, {
-        toValue: 0,
-        duration: 300,
-        easing: Easing.out(Easing.exp),
-        useNativeDriver: true,
-      }),
-    ]),
+    const orbOneAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(orbOneScale, {
+          toValue: 1,
+          duration: 1800,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
 
-    // 🔥 Subtitle fade
-    Animated.timing(subtitleOpacity, {
-      toValue: 1,
-      duration: 250,
-      easing: Easing.linear,
-      useNativeDriver: true,
-    }),
-  ]).start(() => {
-    const elapsed = Date.now() - start;
+        Animated.timing(orbOneScale, {
+          toValue: 0.8,
+          duration: 1800,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
 
-    const remainingTime = TOTAL_SPLASH_TIME - elapsed;
+    /*
+    ----------------------------------------------------------
+    BACKGROUND ORB 2
+    ----------------------------------------------------------
+    */
 
-    if (remainingTime > 0) {
-      setTimeout(onFinish, remainingTime);
-    } else {
-      onFinish();
-    }
-  });
-}, []);
-  const gradientColors =
-    theme === "dark"
-      ? ["#000000", "#1a1a1a"]
-      : appColorCode
-      ? [
-          ERP_COLOR_CODE.ERP_APP_COLOR,
-          "#4c669f",
-          "#3b5998",
-        ]
-      : ["#4c669f", "#3b5998", "#192f6a"];
+    const orbTwoAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(orbTwoScale, {
+          toValue: 1,
+          duration: 2200,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
 
-  const rotateInterpolate = logoRotate.interpolate({
+        Animated.timing(orbTwoScale, {
+          toValue: 0.75,
+          duration: 2200,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+
+    orbOneAnimation.start();
+    orbTwoAnimation.start();
+
+    /*
+    ----------------------------------------------------------
+    LOADING
+    ----------------------------------------------------------
+    */
+
+    const loadingAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(loadingOpacity, {
+          toValue: 1,
+          duration: 700,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+
+        Animated.timing(loadingOpacity, {
+          toValue: 0.3,
+          duration: 700,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+
+    loadingAnimation.start();
+
+    /*
+    ----------------------------------------------------------
+    FINISH
+    ----------------------------------------------------------
+    */
+
+    const finishTimer = setTimeout(() => {
+      finishSplash();
+    }, SPLASH_DURATION);
+
+    timers.push(finishTimer);
+
+    /*
+    ----------------------------------------------------------
+    CLEANUP
+    ----------------------------------------------------------
+    */
+
+    return () => {
+      timers.forEach(clearTimeout);
+
+      orbOneAnimation.stop();
+      orbTwoAnimation.stop();
+      loadingAnimation.stop();
+
+      screenOpacity.stopAnimation();
+
+      logoOpacity.stopAnimation();
+      logoScale.stopAnimation();
+
+      greetingOpacity.stopAnimation();
+      greetingTranslateY.stopAnimation();
+
+      titleOpacity.stopAnimation();
+      titleTranslateY.stopAnimation();
+
+      subtitleOpacity.stopAnimation();
+
+      lineProgress.stopAnimation();
+
+      loadingOpacity.stopAnimation();
+
+      orbOneScale.stopAnimation();
+      orbTwoScale.stopAnimation();
+    };
+
+    // Splash animation intentionally runs once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /*
+  ============================================================
+  RESPONSIVE VALUES
+  ============================================================
+  */
+
+  const logoSize =   280;
+  const logoContainerSize = logoSize - 80;
+
+  /*
+  ============================================================
+  ACCENT LINE
+  ============================================================
+  */
+
+  const animatedLineWidth = lineProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: ["-10deg", "0deg"],
+    outputRange: ["0%", "100%"],
   });
+
+  /*
+  ============================================================
+  RENDER
+  ============================================================
+  */
 
   return (
-    <LinearGradient colors={gradientColors} style={styles.container}>
-      <StatusBar hidden />
+    <View style={styles.container}>
+      <StatusBar
+        hidden
+        translucent
+        backgroundColor="transparent"
+        barStyle="dark-content"
+      />
 
-      {/* TOP LEFT SVG */}
-      {/* <Animated.View
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          height: isLandscape ? 180 : 300,
-          width: isLandscape ? 120 : 190,
-          zIndex: 1,
-          transform: [{ translateY: topImageAnim }],
-        }}
-      >
-        <SvgUri
-          width="100%"
-          height="100%"
-          uri="https://res.cloudinary.com/dht4ddwtn/image/upload/v1741437043/Group_119_a7nurz.svg"
+      {/* ================================================== */}
+      {/* WHITE BACKGROUND */}
+      {/* ================================================== */}
+
+      <LinearGradient
+        colors={["#FFFFFF", "#FFFFFF", "#FBFDFF"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+
+      {/* ================================================== */}
+      {/* TOP BRAND LINE */}
+      {/* ================================================== */}
+
+      <View
+        style={[
+          styles.topBrandLine,
+          {
+            backgroundColor: brandColor,
+          },
+        ]}
+      />
+
+      {/* ================================================== */}
+      {/* TOP RIGHT SOFT ORB */}
+      {/* ================================================== */}
+
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.orb,
+          styles.orbTopRight,
+          {
+            backgroundColor: brandColor,
+            transform: [{ scale: orbOneScale }],
+          },
+        ]}
+      />
+
+      {/* ================================================== */}
+      {/* BOTTOM LEFT SOFT ORB */}
+      {/* ================================================== */}
+
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.orb,
+          styles.orbBottomLeft,
+          {
+            backgroundColor: brandColor,
+            transform: [{ scale: orbTwoScale }],
+          },
+        ]}
+      />
+
+      {/* ================================================== */}
+      {/* DECORATIVE RINGS */}
+      {/* ================================================== */}
+
+      <View pointerEvents="none" style={styles.decorativeArea}>
+        <View
+          style={[
+            styles.ringLarge,
+            {
+              borderColor: `${brandColor}10`,
+            },
+          ]}
         />
-      </Animated.View> */}
 
-      {/* TOP RIGHT SVG */}
+        <View
+          style={[
+            styles.ringMedium,
+            {
+              borderColor: `${brandColor}0C`,
+            },
+          ]}
+        />
+
+        <View
+          style={[
+            styles.ringSmall,
+            {
+              borderColor: `${brandColor}08`,
+            },
+          ]}
+        />
+      </View>
+
+      {/* ================================================== */}
+      {/* MAIN */}
+      {/* ================================================== */}
+
       <Animated.View
-        style={{
-          position: "absolute",
-          top: 0,
-          right: 0,
-          height: isLandscape ? 70 : 100,
-          width: isLandscape ? 70 : 100,
-          zIndex: 1,
-          transform: [{ translateY: topImageAnim }],
-        }}
+        style={[
+          styles.main,
+          {
+            opacity: screenOpacity,
+          },
+        ]}
       >
-        {/* <SvgUri
-          width="100%"
-          height="100%"
-          uri="https://res.cloudinary.com/dht4ddwtn/image/upload/v1741434380/Group_116_lclkz2.svg"
-        /> */}
-      </Animated.View>
+        {isLandscape ? (
+          <View style={styles.landscapeContainer}>
+            {/* ================================================== */}
+            {/* LANDSCAPE LEFT */}
+            {/* ================================================== */}
 
-      {/* BOTTOM LEFT SVG */}
-      <Animated.View
-        style={{
-          position: "absolute",
-          bottom: -30,
-          left: -10,
-          height: isLandscape ? 120 : 160,
-          width: isLandscape ? 120 : 160,
-          zIndex: 1,
-          transform: [{ translateY: bottomImageAnim }],
-        }}
-      >
-        {/* <SvgUri
-          width="100%"
-          height="100%"
-          uri="https://res.cloudinary.com/dht4ddwtn/image/upload/v1741411663/Group_156_qsmeiy.svg"
-        /> */}
-      </Animated.View>
+            <View style={styles.landscapeLeft}>
+              <Animated.View
+                style={[
+                  styles.logoCard,
+                  {
+                    width: logoContainerSize,
+                    height: logoContainerSize,
+                    borderColor: `${brandColor}35`,
+                    shadowColor: brandColor,
+                    opacity: logoOpacity,
+                    transform: [{ scale: logoScale }],
+                  },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.logoCardInner,
+                    {
+                      borderColor: `${brandColor}18`,
+                    },
+                  ]}
+                >
+                  <Image
+                    source={user?.companyLogo || ERP_ICON.APP_LOGO}
+                    style={{
+                      width: logoSize,
+                      height: logoSize,
+                    }}
+                    resizeMode="contain"
+                  />
+                </View>
+              </Animated.View>
 
-      {isLandscape ? (
-        <View style={{ flexDirection: "row", flex: 1 }}>
-          {/* LEFT SIDE */}
-          <View
-            style={{
-              width: "50%",
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 2,
-            }}
-          >
+              {user?.name ? (
+                <Animated.Text
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  style={[
+                    styles.greeting,
+                    {
+                      opacity: greetingOpacity,
+                      transform: [
+                        {
+                          translateY: greetingTranslateY,
+                        },
+                      ],
+                    },
+                  ]}
+                >
+                  {greeting},{" "}
+                  {firstLetterUpperCase(String(user.name))}
+                </Animated.Text>
+              ) : null}
+            </View>
+
+            {/* ================================================== */}
+            {/* LANDSCAPE RIGHT */}
+            {/* ================================================== */}
+
+            <View style={styles.landscapeRight}>
+              <Text style={styles.eyebrow}>WELCOME TO</Text>
+
+              <Animated.Text
+                numberOfLines={3}
+                adjustsFontSizeToFit
+                style={[
+                  styles.companyName,
+                  {
+                    opacity: titleOpacity,
+                    transform: [
+                      {
+                        translateY: titleTranslateY,
+                      },
+                    ],
+                  },
+                ]}
+              >
+                {user?.companyName || t("text.text53")}
+              </Animated.Text>
+
+              <View style={styles.lineWrapper}>
+                <Animated.View
+                  style={[
+                    styles.line,
+                    {
+                      width: animatedLineWidth,
+                      backgroundColor: brandColor,
+                    },
+                  ]}
+                />
+              </View>
+
+              <Animated.Text
+                style={[
+                  styles.subtitle,
+                  {
+                    opacity: subtitleOpacity,
+                  },
+                ]}
+              >
+                {t("text.text54")}
+              </Animated.Text>
+
+              <LoadingIndicator
+                brandColor={brandColor}
+                loadingOpacity={loadingOpacity}
+              />
+            </View>
+          </View>
+        ) : (
+          <View style={styles.portraitContainer}>
+            {/* ================================================== */}
+            {/* LOGO */}
+            {/* ================================================== */}
+
             <Animated.View
               style={[
-                styles.logoWrapper,
+                styles.logoCard,
                 {
-                  opacity: fadeAnim,
+                  width: logoContainerSize,
+                  height: logoContainerSize,
+                  borderColor: `${brandColor}35`,
+                  shadowColor: brandColor,
+                  opacity: logoOpacity,
+                  transform: [{ scale: logoScale }],
+                  marginBottom: 24
+                },
+              ]}
+            >
+              <View
+                style={[
+                  styles.logoCardInner,
+                  {
+                    borderColor: `${brandColor}18`,
+                  },
+                ]}
+              >
+                <Image
+                  source={
+                    baseLink
+                      ? {
+                        uri: `${baseLink}fileupload/1/InvoiceByConfig/1/logo.jpg`,
+                      }
+                      : ERP_ICON.APP_LOGO
+                  }
+                  style={{
+                    width: logoSize,
+                    height: logoSize,
+                  }}
+                  resizeMode="contain"
+                />
+              </View>
+            </Animated.View>
+
+            {/* ================================================== */}
+            {/* GREETING */}
+            {/* ================================================== */}
+
+            {user?.name ? (
+              <Animated.Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                style={[
+                  styles.greeting,
+                  {
+                    opacity: greetingOpacity,
+                    transform: [
+                      {
+                        translateY: greetingTranslateY,
+                      },
+                    ],
+                  },
+                ]}
+              >
+                {greeting},{" "}
+                {firstLetterUpperCase(String(user.name))}
+              </Animated.Text>
+            ) : null}
+
+            {/* ================================================== */}
+            {/* CONTENT */}
+            {/* ================================================== */}
+
+            <Animated.View
+              style={[
+                styles.contentBlock,
+                {
+                  opacity: titleOpacity,
                   transform: [
-                    { scale: scaleAnim },
-                    { rotate: rotateInterpolate },
+                    {
+                      translateY: titleTranslateY,
+                    },
                   ],
                 },
               ]}
             >
-              <Image
-                source={user?.companyLogo || ERP_ICON.APP_LOGO}
-                style={{ height: 90, width: 90 }}
-                resizeMode="contain"
-              />
-            </Animated.View>
+              <Text style={styles.eyebrow}>WELCOME TO</Text>
 
-            {user?.name && (
+              <Text
+                numberOfLines={3}
+                adjustsFontSizeToFit
+                style={styles.companyName}
+              >
+                {user?.companyName || t("text.text53")}
+              </Text>
+
+              {/* ================================================== */}
+              {/* ACCENT LINE */}
+              {/* ================================================== */}
+
+              <View style={styles.lineWrapper}>
+                <Animated.View
+                  style={[
+                    styles.line,
+                    {
+                      width: animatedLineWidth,
+                      backgroundColor: brandColor,
+                    },
+                  ]}
+                />
+              </View>
+
+              {/* ================================================== */}
+              {/* SUBTITLE */}
+              {/* ================================================== */}
+
               <Animated.Text
                 style={[
-                  styles.helloTitle,
+                  styles.subtitle,
                   {
-                    opacity: greetingOpacity,
-                    transform: [{ translateY: textTranslateY }],
-                    color: "#fff",
+                    opacity: subtitleOpacity,
                   },
                 ]}
               >
-                {greeting}, {firstLetterUpperCase(user?.name)}
+                {t("text.text54")}
               </Animated.Text>
-            )}
-          </View>
 
-          {/* RIGHT SIDE */}
+              {/* ================================================== */}
+              {/* LOADING */}
+              {/* ================================================== */}
+
+              <LoadingIndicator
+                brandColor={brandColor}
+                loadingOpacity={loadingOpacity}
+              />
+            </Animated.View>
+          </View>
+        )}
+
+        {/* ================================================== */}
+        {/* FOOTER */}
+        {/* ================================================== */}
+
+        <View style={styles.footer}>
           <View
-            style={{
-              width: "50%",
-              justifyContent: "center",
-              alignItems: "center",
-              paddingHorizontal: 20,
-              zIndex: 2,
-            }}
-          >
-            <Animated.Text
-              style={[
-                styles.title,
-                {
-                  transform: [{ translateY: textTranslateY }],
-                  color: "#fff",
-                  textAlign: "center",
-                },
-              ]}
-            >
-              {user?.companyName
-                ? `Welcome to\n${user.companyName}`
-                : t("text.text53")}
-            </Animated.Text>
+            style={[
+              styles.footerLine,
+              {
+                backgroundColor: `${brandColor}22`,
+              },
+            ]}
+          />
 
-            <Animated.Text
+          <Text style={styles.footerText}>
+            POWERED BY{" "}
+            <Text
               style={[
-                styles.subtitle,
+                styles.footerBrand,
                 {
-                  opacity: subtitleOpacity,
-                  color: "#ddd",
-                  textAlign: "center",
+                  color: brandColor,
                 },
               ]}
             >
-              {t("text.text54")}
-            </Animated.Text>
-
-            <Animated.Text
-              style={[
-                styles.poweredBy,
-                {
-                  opacity: subtitleOpacity,
-                  color: "#aaa",
-                },
-              ]}
-            >
-              Powered by - DevERP Solutions Pvt. Ltd.
-            </Animated.Text>
-          </View>
+              DevERP
+            </Text>
+          </Text>
         </View>
-      ) : (
-        <>
-          {/* LOGO */}
-          <Animated.View
-            style={[
-              styles.logoWrapper,
-              {
-                opacity: fadeAnim,
-                transform: [
-                  { scale: scaleAnim },
-                  { rotate: rotateInterpolate },
-                ],
-                zIndex: 2,
-              },
-            ]}
-          >
-            <Image
-              source={user?.companyLogo || ERP_ICON.APP_LOGO}
-              style={[styles.logo, isIpad && {
-                  height: 90,
-                  width: 90,
-              }]}
-              resizeMode="contain"
-            />
-          </Animated.View>
-
-          {/* GREETING */}
-          {user?.name && (
-            <Animated.Text
-              style={[
-                styles.helloTitle,
-                {
-                  opacity: greetingOpacity,
-                  transform: [{ translateY: textTranslateY }],
-                  color: "#fff",
-                  zIndex: 2,
-                },
-              ]}
-            >
-              {greeting}, {firstLetterUpperCase(user?.name)}
-            </Animated.Text>
-          )}
-
-          {/* TITLE */}
-          <Animated.Text
-            style={[
-              styles.title,
-              {
-                transform: [{ translateY: textTranslateY }],
-                color: "#fff",
-                textAlign: "center",
-                zIndex: 2,
-              },
-            ]}
-          >
-            {user?.companyName
-              ? `Welcome to\n${user.companyName}`
-              : t("text.text53")}
-          </Animated.Text>
-
-          {/* SUBTITLE */}
-          <Animated.Text
-            style={[
-              styles.subtitle,
-              {
-                opacity: subtitleOpacity,
-                color: "#ddd",
-                textAlign: "center",
-                zIndex: 2,
-              },
-            ]}
-          >
-            {t("text.text54")}
-          </Animated.Text>
-
-          {/* FOOTER */}
-          <Animated.Text
-            style={[
-              styles.poweredBy,
-              {
-                opacity: subtitleOpacity,
-                color: "#aaa",
-                zIndex: 2,
-              },
-            ]}
-          >
-            Powered by - DevERP Solutions Pvt. Ltd.
-          </Animated.Text>
-        </>
-      )}
-    </LinearGradient>
+      </Animated.View>
+    </View>
   );
 };
+
+/*
+================================================================
+LOADING INDICATOR
+================================================================
+*/
+
+interface LoadingIndicatorProps {
+  brandColor: string;
+  loadingOpacity: Animated.Value;
+}
+
+const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
+  brandColor,
+  loadingOpacity,
+}) => {
+  return (
+    <Animated.View
+      style={[
+        styles.loadingContainer,
+        {
+          opacity: loadingOpacity,
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.loadingDot,
+          {
+            backgroundColor: brandColor,
+          },
+        ]}
+      />
+
+      <View
+        style={[
+          styles.loadingDot,
+          styles.loadingDotCenter,
+          {
+            backgroundColor: brandColor,
+          },
+        ]}
+      />
+
+      <View
+        style={[
+          styles.loadingDot,
+          {
+            backgroundColor: brandColor,
+          },
+        ]}
+      />
+    </Animated.View>
+  );
+};
+
+/*
+================================================================
+STYLES
+================================================================
+*/
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    overflow: "hidden",
+  },
+
+  main: {
+    flex: 1,
+    zIndex: 10,
+  },
+
+  /*
+  ==============================================================
+  TOP BRAND LINE
+  ==============================================================
+  */
+
+  topBrandLine: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    zIndex: 50,
+  },
+
+  /*
+  ==============================================================
+  SOFT ORBS
+  ==============================================================
+  */
+
+  orb: {
+    position: "absolute",
+    width: 360,
+    height: 360,
+    borderRadius: 180,
+    opacity: 0.055,
+  },
+
+  orbTopRight: {
+    top: -220,
+    right: -170,
+  },
+
+  orbBottomLeft: {
+    bottom: -230,
+    left: -180,
+  },
+
+  /*
+  ==============================================================
+  DECORATIVE RINGS
+  ==============================================================
+  */
+
+  decorativeArea: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  ringLarge: {
+    position: "absolute",
+    width: 500,
+    height: 500,
+    borderWidth: 1,
+    borderRadius: 250,
+  },
+
+  ringMedium: {
+    position: "absolute",
+    width: 360,
+    height: 360,
+    borderWidth: 1,
+    borderRadius: 180,
+  },
+
+  ringSmall: {
+    position: "absolute",
+    width: 240,
+    height: 240,
+    borderWidth: 1,
+    borderRadius: 120,
+  },
+
+  /*
+  ==============================================================
+  PORTRAIT
+  ==============================================================
+  */
+
+  portraitContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 28,
+  },
+
+  contentBlock: {
+    width: "100%",
+    maxWidth: 600,
+    alignItems: "center",
+  },
+
+  /*
+  ==============================================================
+  LANDSCAPE
+  ==============================================================
+  */
+
+  landscapeContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 45,
+  },
+
+  landscapeLeft: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  landscapeRight: {
+    flex: 1.25,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 30,
+  },
+
+  /*
+  ==============================================================
+  LOGO
+  ==============================================================
+  */
+
+  logoCard: {
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 36,
+    backgroundColor: "#FFFFFF",
+  },
+
+  logoCardInner: {
+    width: "82%",
+    height: "82%",
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    borderRadius: 28,
+
+    backgroundColor: "#F8FAFC",
+  },
+
+  /*
+  ==============================================================
+  GREETING
+  ==============================================================
+  */
+
+  greeting: {
+    marginTop: 22,
+
+    color: "#5F6B7A",
+
+    fontSize: 16,
+    lineHeight: 22,
+
+    fontWeight: "500",
+
+    letterSpacing: 0.15,
+
+    textAlign: "center",
+  },
+
+  /*
+  ==============================================================
+  EYEBROW
+  ==============================================================
+  */
+
+  eyebrow: {
+    marginTop: 28,
+
+    color: "#8A94A3",
+
+    fontSize: 11,
+    lineHeight: 16,
+
+    fontWeight: "700",
+
+    letterSpacing: 2.2,
+
+    textAlign: "center",
+  },
+
+  /*
+  ==============================================================
+  COMPANY NAME
+  ==============================================================
+  */
+
+  companyName: {
+    marginTop: 9,
+    maxWidth: 620,
+    color: "#172033",
+    fontSize: 20,
+    lineHeight: 39,
+    fontWeight: "700",
+
+    letterSpacing: -0.5,
+
+    textAlign: "center",
+  },
+
+  /*
+  ==============================================================
+  ACCENT LINE
+  ==============================================================
+  */
+
+  lineWrapper: {
+    width: 72,
+    height: 3,
+
+    marginTop: 19,
+
+    borderRadius: 3,
+
+    backgroundColor: "#E8EDF3",
+
+    overflow: "hidden",
+  },
+
+  line: {
+    height: 3,
+
+    borderRadius: 3,
+  },
+
+  /*
+  ==============================================================
+  SUBTITLE
+  ==============================================================
+  */
+
+  subtitle: {
+    marginTop: 18,
+
+    maxWidth: 500,
+
+    color: "#7A8492",
+
+    fontSize: 14,
+    lineHeight: 21,
+
+    fontWeight: "400",
+
+    letterSpacing: 0.1,
+
+    textAlign: "center",
+  },
+
+  /*
+  ==============================================================
+  LOADING
+  ==============================================================
+  */
+
+  loadingContainer: {
+    flexDirection: "row",
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    marginTop: 27,
+
+    height: 12,
+  },
+
+  loadingDot: {
+    width: 5,
+    height: 5,
+
+    borderRadius: 3,
+  },
+
+  loadingDotCenter: {
+    width: 7,
+    height: 7,
+
+    borderRadius: 4,
+
+    marginHorizontal: 5,
+  },
+
+  /*
+  ==============================================================
+  FOOTER
+  ==============================================================
+  */
+
+  footer: {
+    position: "absolute",
+
+    left: 0,
+    right: 0,
+    bottom: 27,
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  footerLine: {
+    width: 42,
+    height: 1,
+
+    marginBottom: 10,
+
+    borderRadius: 1,
+  },
+
+  footerText: {
+    color: "#98A1AE",
+
+    fontSize: 9,
+    lineHeight: 14,
+
+    fontWeight: "600",
+
+    letterSpacing: 1.5,
+
+    textAlign: "center",
+  },
+
+  footerBrand: {
+    fontWeight: "800",
+
+    letterSpacing: 1.5,
+  },
+});
 
 export default CustomSplashScreen;

@@ -72,25 +72,25 @@ const LoginScreen = ({ navigation, route }: any) => {
   }, []);
 
 
-const setupNotification = async () => {
-  try {
-    let granted = false;
+  const setupNotification = async () => {
+    try {
+      let granted = false;
 
-    if (Platform.OS === "android") {
-      granted = await requestAndroidPermission();
-    } else {
-      granted = await requestNotificationPermission();
+      if (Platform.OS === "android") {
+        granted = await requestAndroidPermission();
+      } else {
+        granted = await requestNotificationPermission();
+      }
+
+      // if (!granted) {
+      //   console.log("Permission not granted");
+      //   return;
+      // }
+
+    } catch (error) {
+      console.log(error);
     }
-
-    // if (!granted) {
-    //   console.log("Permission not granted");
-    //   return;
-    // }
-
-  } catch (error) {
-    console.log(error);
-  }
-};
+  };
 
   const handlePersistAfterLogin = async (
     company_code: string,
@@ -163,7 +163,7 @@ const setupNotification = async () => {
         >
           <FlatList
             data={[""]}
-                              bounces={false}
+            bounces={false}
 
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
@@ -190,7 +190,7 @@ const setupNotification = async () => {
                           alignContent: "center",
                           alignItems: "center",
                           justifyContent: "center",
-                         
+
 
                         }}
                       >

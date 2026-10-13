@@ -274,7 +274,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12, 
     borderWidth: 1,
     borderColor: ERP_COLOR_CODE.ERP_BORDER_LINE,
-    width: '100%'
+    width: '100%',
+    marginBottom : 8
   },
   searchIcon: {
     fontSize: 16,
@@ -310,7 +311,7 @@ export const styles = StyleSheet.create({
   dateButton: {
     backgroundColor: ERP_COLOR_CODE.ERP_WHITE,
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 10,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: ERP_COLOR_CODE.ERP_BORDER_LINE,

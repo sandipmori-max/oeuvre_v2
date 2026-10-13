@@ -529,7 +529,7 @@ export const normalizeDate = (dateStr: string) => {
     Nov: "11",
     Dec: "12",
   };
-  return `${year}-${monthMap[monthStr]}-${day.padStart(2, "0")}`;
+  return `${year}-${monthMap[monthStr]}-${day?.padStart(2, "0")}`;
 };
 
 export const getWorkedHours = (punchIn: string, punchOut: string): number => {

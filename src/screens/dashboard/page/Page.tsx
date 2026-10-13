@@ -971,6 +971,7 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
         );
       }
 
+      
       else if (item?.ctltype === "IMAGE" && item?.field?.startsWith("invoice_reader_")){
         content = <BusinessCardView
                 baseLink={baseLink}
@@ -1058,6 +1059,17 @@ const PageScreen = ({ isFromForceLeave, pageUrl }: any) => {
           />
         );
       }
+
+        else if ( item?.field?.startsWith("qr_scan")) {
+        content = <ScanScreen errors={errors} isFromChild={isFromChild} item={item} onValueChange={setValue} />;
+      }
+      //BarCodeScan
+      else if (
+        item?.field?.startsWith("barcode_scan")
+      ) {
+        content = <BarCodeScan errors={errors} isFromChild={isFromChild} item={item} onValueChange={setValue} />;
+      }
+
       //Media - BusinessCardView
       else if (
         item?.ctltype === "FILE" ||

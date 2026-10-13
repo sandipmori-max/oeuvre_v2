@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Modal,
@@ -6,8 +6,10 @@ import {
   View,
   Text,
   TouchableOpacity,
+  Animated,
+  Easing,
 } from "react-native";
-
+import Sound from "react-native-sound";
 import { styles } from "./CameraScanner.styles";
 import { RNHoleView } from "react-native-hole-view";
 import {
@@ -41,6 +43,8 @@ export const CameraScanner = ({
   const [isActive, setIsActive] = useState(isIos);
   const [flash, setFlash] = useState<"on" | "off">(isIos ? "off" : "on");
   const [codeScanned, setCodeScanned] = useState("");
+  const beepSoundRef = useRef<Sound | null>(null);
+  const scanLineAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (codeScanned) {
@@ -63,6 +67,74 @@ export const CameraScanner = ({
     };
   }, [isCameraInitialized]);
 
+
+  useEffect(() => {
+    Sound.setCategory("Playback");
+
+    const sound = new Sound(
+      "beep.mp3",
+      (error) => {
+        if (error) {
+          console.error("[BarCodeCameraScanner] Beep load failed:", error);
+          return;
+        }
+
+        beepSoundRef.current = sound;
+      },
+    );
+
+    return () => {
+      beepSoundRef.current = null;
+      sound.release();
+    };
+  }, []);
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(scanLineAnim, {
+          toValue: 1,
+          duration: 1800,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scanLineAnim, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+
+    if (isActive) {
+      animation.start();
+    }
+
+    return () => {
+      animation.stop();
+      scanLineAnim.setValue(0);
+    };
+  }, [isActive, scanLineAnim]);
+
+
+  const playBeep = useCallback(() => {
+    const sound = beepSoundRef.current;
+
+    if (!sound) {
+      console.warn("[BarCodeCameraScanner] Beep sound is not loaded yet.");
+      return;
+    }
+
+    sound.stop(() => {
+      sound.setCurrentTime(0);
+      sound.play((success) => {
+        if (!success) {
+          console.warn("[BarCodeCameraScanner] Beep playback failed.");
+        }
+      });
+    });
+  }, []);
+
   const onInitialized = () => setIsCameraInitialized(true);
 
   const codeScanner = useCodeScanner({
@@ -70,7 +142,10 @@ export const CameraScanner = ({
     onCodeScanned: (codes) => {
       if (codes.length > 0 && codes[0].value) {
         setIsActive(false);
-        setTimeout(() => setCodeScanned(codes[0]?.value), 500);
+        setTimeout(() => {
+          playBeep();
+          setCodeScanned(codes[0]?.value)
+        }, 500);
       }
     },
   });
@@ -128,16 +203,63 @@ export const CameraScanner = ({
           <RNHoleView
             holes={[
               {
-                x: getWindowWidth() * 0.1,
-                y: getWindowHeight() * 0.25,
-                width: getWindowWidth() * 0.8,
-                height: getWindowHeight() * 0.35,
-                borderRadius: 12,
+                x: (getWindowWidth() - 250) / 2,
+                y: (getWindowHeight() - 250) / 2,
+                width: 250,
+                height: 250,
+                borderRadius: 8,
               },
             ]}
-            style={[styles.rnholeView, styles.fullScreenCamera]}
+            style={[
+              styles.rnholeView,
+              {
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "black",
+              },
+            ]}
           />
 
+          {/* Green scanning frame + animated wave */}
+          <View
+            pointerEvents="none"
+            style={{
+              position: "absolute",
+              left: (getWindowWidth() - 250) / 2,
+              top: (getWindowHeight() - 250) / 2,
+              width: 250,
+              height: 250,
+              borderWidth: 2,
+              borderColor: "#095227",
+              borderRadius: 8,
+              overflow: "hidden",
+            }}
+          >
+            <Animated.View
+              style={{
+                position: "absolute",
+                top: (getWindowHeight() - 250) / 2,
+                width: 250,
+                height: 2,
+                backgroundColor: "#04a045",
+                zIndex: 10,
+                elevation: 10,
+                shadowColor: "#04a045",
+                shadowOpacity: 0.8,
+                shadowRadius: 5,
+                transform: [
+                  {
+                    translateY: scanLineAnim.interpolate({
+                      inputRange: [0, 1], outputRange: [0, 248],
+                    }),
+                  },
+                ],
+              }}
+            />
+          </View>
           {/* ---------- Bottom Fade Panel ---------- */}
           <View style={uiStyles.bottomPanel}>
             <Text style={uiStyles.bottomText}>{t("test18")}</Text>

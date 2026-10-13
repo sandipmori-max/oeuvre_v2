@@ -196,9 +196,7 @@ const List = ({
 }: any) => {
   const dispatch = useAppDispatch();
 
-  const theme = useAppSelector(
-    (state) => state?.theme.mode,
-  );
+  const theme = useAppSelector((state) => state?.theme.mode);
 
   const { t } = useTranslations();
 
@@ -763,7 +761,12 @@ const List = ({
           {
             PUNCH_STATUS_FILTERS.length > 0 && <>
 
-              <Text style={{ marginVertical: 8, marginHorizontal: 8 }}>Punch Status</Text>
+              <Text style={[{ marginVertical: 8, marginHorizontal: 8 },
+{
+                        color: theme === "dark" ? "#fff" : "#000",
+                      },
+
+              ]}>Punch Status</Text>
               <View>
                 <ScrollView
                   bounces={false}
@@ -812,7 +815,7 @@ const List = ({
                         ]}
                       >
                         <Text
-                          style={{
+                          style={[{
                             color:
                               activePunchStatus ===
                                 filter.key
@@ -823,7 +826,12 @@ const List = ({
 
                             paddingHorizontal: 12,
                             paddingVertical: 6,
-                          }}
+                          },
+                        theme === "dark" &&  activePunchStatus ===
+                                filter.key && {
+                        color:   "#fff",
+                      },
+                        ]}
                         >
                           {filter.label}
                         </Text>
@@ -841,7 +849,9 @@ const List = ({
         ====================================================== */}
           {
             STATUS_FILTERS.length > 0 && <>
-              <Text style={{ marginVertical: 8, marginHorizontal: 8 }}>Day Status</Text>
+              <Text style={[{ marginVertical: 8, marginHorizontal: 8 }, {
+                        color: theme === "dark" ? "#fff" : "#000",
+                      },]}>Day Status</Text>
               <View>
 
                 <ScrollView
@@ -891,7 +901,7 @@ const List = ({
                         ]}
                       >
                         <Text
-                          style={{
+                          style={[{
                             color:
                               activeStatus ===
                                 filter.key
@@ -902,7 +912,13 @@ const List = ({
 
                             paddingHorizontal: 12,
                             paddingVertical: 6,
-                          }}
+                          },
+                        theme === "dark" &&  activeStatus ===
+                                filter.key && {
+                        color:   "#fff",
+                      },
+                        
+                        ]}
                         >
                           {filter.label}
                         </Text>

@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyBEq67hPG9Y3zZh385cTdxngQAtDgtLfmk</string>
+	<string>AIzaSyCcCDEpsMlMeM7YNuHkSmmlAlMnuSX9IbY</string>
 	<key>GCM_SENDER_ID</key>
-	<string>944238529141</string>
+	<string>485677144314</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.oeuvre</string>
 	<key>PROJECT_ID</key>
-	<string>oeuvre-main</string>
+	<string>oeuvre-786e7</string>
 	<key>STORAGE_BUCKET</key>
-	<string>oeuvre-main.firebasestorage.app</string>
+	<string>oeuvre-786e7.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:944238529141:ios:f497aeaba147db0910463c</string>
+	<string>1:485677144314:ios:3e03d3f77c25c187d81143</string>
 </dict>
 </plist>

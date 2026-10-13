@@ -231,10 +231,10 @@ const TableView = ({
   const TableHeader = () => {
     return (
       <View
-        style={{
+        style={[{
           flexDirection: "row",
-          backgroundColor: ERP_COLOR_CODE.ERP_APP_COLOR,
-        }}
+          backgroundColor: theme === "dark" ? "black" : ERP_COLOR_CODE.ERP_APP_COLOR,
+        }]}
       >
         {allKeys.map((key, idx) => {
           const config = getHeaderConfig(key);
@@ -332,7 +332,7 @@ const TableView = ({
 
         <Text
           style={{
-            color: "black", 
+            color: "black",
           }}
         >
           {count}  {isCollapsed ? "▼" : "▲"}
@@ -587,7 +587,7 @@ const TableView = ({
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#fff",
+          backgroundColor: theme === "dark" ? "black" : ERP_COLOR_CODE.ERP_APP_COLOR,
         }}
       >
         <NoData isShowTop={false} />

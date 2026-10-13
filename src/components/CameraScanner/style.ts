@@ -4,7 +4,7 @@ import {
 export const ui = StyleSheet.create({
   backButton: {
     position: "absolute",
-    top: 40,
+    top: 60,
     left: 20,
     zIndex: 10,
     padding: 6,
@@ -12,7 +12,7 @@ export const ui = StyleSheet.create({
 
   descriptionBox: {
     position: "absolute",
-    top: 90,
+    top: 110,
     width: "100%",
     paddingHorizontal: 20,
     zIndex: 10,
@@ -50,6 +50,7 @@ export const uiStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    top: 60,
     zIndex: 50,
   },
 

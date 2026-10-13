@@ -634,8 +634,14 @@ const ReadableView = ({
               >
                 {btnKeys?.map((key, idx) => {
                   const actionValue = item[key];
-                  const { label, color } = getButtonMeta(key);
+                   const [left, result] = actionValue.split("/");
 
+                  const { label, color } = getButtonMeta(key);
+                  const formattedTitle = left
+                    .replace(/App$/, "")
+                    .replace(/([a-z])([A-Z])/g, "$1 $2")
+                    .replace(/_/g, " ");
+                    
                   return (
                     <TouchableOpacity
                       key={`${key}-${idx}`}
@@ -666,7 +672,7 @@ const ReadableView = ({
                           fontSize: 12,
                         }}
                       >
-                        {label}
+                        {formattedTitle}
                       </Text>
                     </TouchableOpacity>
                   );

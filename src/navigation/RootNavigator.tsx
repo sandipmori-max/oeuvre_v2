@@ -491,7 +491,6 @@ useEffect(() => {
         forceLoader ? <>
           <FullViewLoader />
         </> : <>
-
           {isAuthenticated ? <StackNavigator /> : <AuthNavigator />}
           {isAuthenticated && (
             <CustomAlert

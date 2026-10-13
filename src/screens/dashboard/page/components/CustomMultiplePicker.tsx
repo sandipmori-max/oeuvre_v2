@@ -188,7 +188,10 @@ const CustomMultiplePicker = ({
               : selectedOption || `Select ${label}`
           }
           numberOfLines={1}
-          style={{ flex: 1 }}
+          style={{ flex: 1 ,
+             color : ERP_COLOR_CODE.ERP_APP_COLOR,
+             fontWeight : '600'
+          }}
         />
 
         <MaterialIcons
@@ -283,12 +286,13 @@ const CustomMultiplePicker = ({
             value={search}
             onChangeText={setSearch}
             style={{
-              borderWidth: 0.4,
+              borderWidth: 1,
               borderColor:
-                theme === "dark" ? "#fff" : ERP_COLOR_CODE.ERP_F8F9FA,
+                theme === "dark" ? "#fff" : ERP_COLOR_CODE.ERP_BORDER,
               borderRadius: 8,
               padding: 8,
               marginVertical: 8,
+              
             }}
           />
 

@@ -580,37 +580,37 @@ const Media = ({
             }
           }
         },
-        {
-          text: "Scan Text",
-          icon: "document-scanner",
+        // {
+        //   text: "Scan Text",
+        //   icon: "document-scanner",
 
-          onPress: async () => {
+        //   onPress: async () => {
 
-            try {
+        //     try {
 
-              const granted =
-                await requestPermission("camera");
+        //       const granted =
+        //         await requestPermission("camera");
 
-              if (!granted) {
-                return;
-              }
+        //       if (!granted) {
+        //         return;
+        //       }
 
 
-              navigation.navigate(
-                "TextScannerScreen" as never
-              );
+        //       navigation.navigate(
+        //         "TextScannerScreen" as never
+        //       );
 
-            } catch (error) {
+        //     } catch (error) {
 
-              console.log(
-                "Text Scanner Error:",
-                error
-              );
+        //       console.log(
+        //         "Text Scanner Error:",
+        //         error
+        //       );
 
-            }
+        //     }
 
-          },
-        },
+        //   },
+        // },
       ];
     } else {
       return [];
@@ -1078,8 +1078,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-
-  /* ---------- FULLSCREEN IMAGE MODAL (IMPROVED) ---------- */
 
   fullscreenModalOverlay: {
     flex: 1,
