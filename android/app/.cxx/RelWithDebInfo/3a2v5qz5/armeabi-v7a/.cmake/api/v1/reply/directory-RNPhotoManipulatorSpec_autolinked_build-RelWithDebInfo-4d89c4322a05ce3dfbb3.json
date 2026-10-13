@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "RNPhotoManipulatorSpec_autolinked_build",
+		"source" : "/Users/deverp/Desktop/Sandip_Mori/oeuvre_v2/node_modules/react-native-photo-manipulator/android/build/generated/source/codegen/jni"
+	}
+}
